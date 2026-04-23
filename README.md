@@ -6,6 +6,7 @@
 
 [**Live demo →**](https://take-home-calculator-nine.vercel.app/)
 
+[![CI](https://github.com/HariYenuganti/take-home-calculator/actions/workflows/ci.yml/badge.svg)](https://github.com/HariYenuganti/take-home-calculator/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6)](./tsconfig.json)
