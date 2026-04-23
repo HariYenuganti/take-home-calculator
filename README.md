@@ -10,7 +10,7 @@ quietly mislead you about supplemental-wage withholding.
 
 ![Take-Home Calculator screenshot](./public/screenshot.png)
 
-**Live demo:** _not yet deployed — add URL here after shipping._
+**Live demo:** <https://take-home-calculator-nine.vercel.app/>
 
 It models:
 
