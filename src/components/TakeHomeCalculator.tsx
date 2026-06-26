@@ -13,6 +13,7 @@ import {
 } from "@/lib/urlState";
 import ScenarioInputs from "./ScenarioInputs";
 import ScenarioDetail from "./ScenarioDetail";
+import MarginalDollar from "./MarginalDollar";
 
 export default function TakeHomeCalculator() {
   const [state, setState] = useState<CalcState>(DEFAULT_STATE);
@@ -481,10 +482,16 @@ export default function TakeHomeCalculator() {
                 />
               </>
             ) : (
-              <ScenarioDetail
-                result={result}
-                otherPostTax={state.otherPostTax}
-              />
+              <>
+                <ScenarioDetail
+                  result={result}
+                  otherPostTax={state.otherPostTax}
+                />
+                <MarginalDollar
+                  base={{ ...state, salary }}
+                  baseResult={result}
+                />
+              </>
             )}
 
             <div
