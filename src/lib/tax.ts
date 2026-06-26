@@ -121,8 +121,8 @@ export const STATES: Record<string, StateDef> = {
   },
   ut: {
     name: "Utah",
-    rate: 0.0455,
-    suppRate: 0.0455,
+    rate: 0.0445,
+    suppRate: 0.0465,
     stdDed: { single: 0, mfj: 0, hoh: 0, mfs: 0 },
   },
   mi: {
