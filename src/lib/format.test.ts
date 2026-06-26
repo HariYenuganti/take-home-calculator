@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fmt, fmtPct, fmtSigned } from "./format";
+import { fmt, fmtPct, fmtSigned, pctDelta } from "./format";
 
 describe("fmt", () => {
   it("formats as whole-dollar USD with no cents", () => {
@@ -27,5 +27,13 @@ describe("fmtPct", () => {
   it("renders rates with two decimal places", () => {
     expect(fmtPct(0.22)).toBe("22.00%");
     expect(fmtPct(0.0399)).toBe("3.99%");
+  });
+});
+
+describe("pctDelta", () => {
+  it("formats a signed percentage-point delta", () => {
+    expect(pctDelta(0.24, 0.22)).toBe("+2.00 pp");
+    expect(pctDelta(0.22, 0.24)).toBe("−2.00 pp");
+    expect(pctDelta(0.22, 0.22)).toBe("+0.00 pp");
   });
 });

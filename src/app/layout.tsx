@@ -1,16 +1,37 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import {
+  Instrument_Serif,
+  IBM_Plex_Sans,
+  IBM_Plex_Mono,
+} from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const serif = Instrument_Serif({
   subsets: ["latin"],
+  weight: "400",
+  style: ["normal", "italic"],
+  variable: "--ff-serif",
+  display: "swap",
+});
+const sans = IBM_Plex_Sans({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--ff-sans",
+  display: "swap",
+});
+const mono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--ff-mono",
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#0e3b2e" },
+    { media: "(prefers-color-scheme: dark)", color: "#14120d" },
+  ],
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://take-home-calculator-nine.vercel.app"),
@@ -50,9 +71,18 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${serif.variable} ${sans.variable} ${mono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <script
+          // Set the theme before paint to avoid a flash: explicit choice from
+          // localStorage, else the OS preference.
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('theme');if(t!=='light'&&t!=='dark'){t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}document.documentElement.dataset.theme=t;}catch(e){}})();`,
+          }}
+        />
+        {children}
+      </body>
     </html>
   );
 }

@@ -70,7 +70,11 @@ export const FED_SUPP_RATE = 0.22;
 export const FED_SUPP_RATE_HIGH = 0.37;
 export const FED_SUPP_MILLION_CAP = 1_000_000;
 
-export const EMPLOYEE_401K_LIMIT_2026 = 23500;
+export const EMPLOYEE_401K_LIMIT_2026 = 24500;
+
+// Massachusetts levies a 4% surtax on taxable income above an annually indexed
+// threshold (~$1,107,750 for 2026), on top of the 5% flat rate.
+export const MA_SURTAX_THRESHOLD_2026 = 1_107_750;
 
 export interface StateDef {
   name: string;
@@ -79,6 +83,11 @@ export interface StateDef {
   rate: number | null;
   suppRate: number | null;
   stdDed: Record<FilingStatus, number>;
+  // Whether this state recognizes the federal pre-tax treatment of 401(k)
+  // elective deferrals and Section 125 cafeteria benefits. A few states (e.g.
+  // PA) tax those contributions instead. Both default to true.
+  allow401kDeduction?: boolean;
+  allowSection125?: boolean;
   // Progressive bracket schedules per filing status. When present, state
   // income tax is computed bracket-wise and `rate` is not used. See the
   // template below for how to add a progressive state.
@@ -103,6 +112,10 @@ export const STATES: Record<string, StateDef> = {
     rate: 0.0307,
     suppRate: 0.0307,
     stdDed: { single: 0, mfj: 0, hoh: 0, mfs: 0 },
+    // PA taxes 401(k) elective deferrals and most Section 125 benefits, so its
+    // wage base is gross compensation, not the reduced federal base.
+    allow401kDeduction: false,
+    allowSection125: false,
   },
   il: {
     name: "Illinois",
@@ -112,8 +125,8 @@ export const STATES: Record<string, StateDef> = {
   },
   ut: {
     name: "Utah",
-    rate: 0.0455,
-    suppRate: 0.0455,
+    rate: 0.0445,
+    suppRate: 0.0465,
     stdDed: { single: 0, mfj: 0, hoh: 0, mfs: 0 },
   },
   mi: {
@@ -124,8 +137,8 @@ export const STATES: Record<string, StateDef> = {
   },
   in: {
     name: "Indiana",
-    rate: 0.03,
-    suppRate: 0.0315,
+    rate: 0.0295,
+    suppRate: 0.0295,
     stdDed: { single: 1000, mfj: 2000, hoh: 1000, mfs: 1000 },
   },
   co: {
@@ -142,21 +155,42 @@ export const STATES: Record<string, StateDef> = {
   },
   ky: {
     name: "Kentucky",
-    rate: 0.04,
-    suppRate: 0.04,
+    rate: 0.035,
+    suppRate: 0.035,
     stdDed: { single: 3460, mfj: 3460, hoh: 3460, mfs: 3460 },
   },
   ga: {
     name: "Georgia",
-    rate: 0.0519,
-    suppRate: 0.0519,
-    stdDed: { single: 12000, mfj: 24000, hoh: 12000, mfs: 12000 },
+    rate: 0.0499,
+    suppRate: 0.0499,
+    stdDed: { single: 15000, mfj: 30000, hoh: 15000, mfs: 15000 },
   },
   ma: {
     name: "Massachusetts",
     rate: 0.05,
     suppRate: 0.05,
     stdDed: { single: 0, mfj: 0, hoh: 0, mfs: 0 },
+    // 5% flat plus the 4% millionaire surtax above the threshold. The threshold
+    // is per return — it is not doubled for joint filers — so all four filing
+    // statuses share the same schedule.
+    brackets: {
+      single: [
+        { rate: 0.05, upTo: MA_SURTAX_THRESHOLD_2026 },
+        { rate: 0.09, upTo: Infinity },
+      ],
+      mfj: [
+        { rate: 0.05, upTo: MA_SURTAX_THRESHOLD_2026 },
+        { rate: 0.09, upTo: Infinity },
+      ],
+      hoh: [
+        { rate: 0.05, upTo: MA_SURTAX_THRESHOLD_2026 },
+        { rate: 0.09, upTo: Infinity },
+      ],
+      mfs: [
+        { rate: 0.05, upTo: MA_SURTAX_THRESHOLD_2026 },
+        { rate: 0.09, upTo: Infinity },
+      ],
+    },
   },
   id: {
     name: "Idaho",
@@ -168,7 +202,126 @@ export const STATES: Record<string, StateDef> = {
     name: "Louisiana",
     rate: 0.03,
     suppRate: 0.03,
-    stdDed: { single: 12500, mfj: 25000, hoh: 12500, mfs: 12500 },
+    stdDed: { single: 12500, mfj: 25000, hoh: 25000, mfs: 12500 },
+  },
+  ca: {
+    name: "California",
+    rate: null,
+    // CA FTB withholds 10.23% on bonuses/stock (RSUs), 6.6% other supplemental.
+    suppRate: 0.1023,
+    stdDed: { single: 5706, mfj: 11412, hoh: 11412, mfs: 5706 },
+    // Latest published FTB rate schedules (2025 tax year). The FTB
+    // inflation-indexes the thresholds annually and had not released the 2026
+    // Form 540 schedules as of mid-2026; the rate structure is stable. The 1%
+    // Mental Health Services surcharge on income over $1M is folded in as the
+    // 13.3% top band. Refresh the thresholds when FTB publishes 2026.
+    brackets: {
+      single: [
+        { rate: 0.01, upTo: 11079 },
+        { rate: 0.02, upTo: 26264 },
+        { rate: 0.04, upTo: 41452 },
+        { rate: 0.06, upTo: 57542 },
+        { rate: 0.08, upTo: 72724 },
+        { rate: 0.093, upTo: 371479 },
+        { rate: 0.103, upTo: 445771 },
+        { rate: 0.113, upTo: 742953 },
+        { rate: 0.123, upTo: 1000000 },
+        { rate: 0.133, upTo: Infinity },
+      ],
+      mfj: [
+        { rate: 0.01, upTo: 22158 },
+        { rate: 0.02, upTo: 52528 },
+        { rate: 0.04, upTo: 82904 },
+        { rate: 0.06, upTo: 115084 },
+        { rate: 0.08, upTo: 145448 },
+        { rate: 0.093, upTo: 742958 },
+        { rate: 0.103, upTo: 891542 },
+        { rate: 0.113, upTo: 1000000 },
+        { rate: 0.123, upTo: 1485906 },
+        { rate: 0.133, upTo: Infinity },
+      ],
+      hoh: [
+        { rate: 0.01, upTo: 22173 },
+        { rate: 0.02, upTo: 52530 },
+        { rate: 0.04, upTo: 67716 },
+        { rate: 0.06, upTo: 83805 },
+        { rate: 0.08, upTo: 98990 },
+        { rate: 0.093, upTo: 505208 },
+        { rate: 0.103, upTo: 606251 },
+        { rate: 0.113, upTo: 1000000 },
+        { rate: 0.123, upTo: 1010417 },
+        { rate: 0.133, upTo: Infinity },
+      ],
+      mfs: [
+        { rate: 0.01, upTo: 11079 },
+        { rate: 0.02, upTo: 26264 },
+        { rate: 0.04, upTo: 41452 },
+        { rate: 0.06, upTo: 57542 },
+        { rate: 0.08, upTo: 72724 },
+        { rate: 0.093, upTo: 371479 },
+        { rate: 0.103, upTo: 445771 },
+        { rate: 0.113, upTo: 742953 },
+        { rate: 0.123, upTo: 1000000 },
+        { rate: 0.133, upTo: Infinity },
+      ],
+    },
+  },
+  ny: {
+    name: "New York (state only)",
+    rate: null,
+    // NY DTF 2026 supplemental withholding rate (Pub. NYS-50-T-NYS, rev. 1/26).
+    suppRate: 0.117,
+    stdDed: { single: 8000, mfj: 16050, hoh: 11200, mfs: 8000 },
+    // 2026 NY State schedules — Ch. 59 of the Laws of 2025 cut the bottom five
+    // rates (effective Jan 1, 2026); top three brackets run through 2032. STATE
+    // ONLY: NYC / Yonkers resident taxes and the high-earner benefit-recapture
+    // are not modeled, so very high incomes are slightly understated.
+    brackets: {
+      single: [
+        { rate: 0.039, upTo: 8500 },
+        { rate: 0.044, upTo: 11700 },
+        { rate: 0.0515, upTo: 13900 },
+        { rate: 0.054, upTo: 80650 },
+        { rate: 0.059, upTo: 215400 },
+        { rate: 0.0685, upTo: 1077550 },
+        { rate: 0.0965, upTo: 5000000 },
+        { rate: 0.103, upTo: 25000000 },
+        { rate: 0.109, upTo: Infinity },
+      ],
+      mfj: [
+        { rate: 0.039, upTo: 17150 },
+        { rate: 0.044, upTo: 23600 },
+        { rate: 0.0515, upTo: 27900 },
+        { rate: 0.054, upTo: 161550 },
+        { rate: 0.059, upTo: 323200 },
+        { rate: 0.0685, upTo: 2155350 },
+        { rate: 0.0965, upTo: 5000000 },
+        { rate: 0.103, upTo: 25000000 },
+        { rate: 0.109, upTo: Infinity },
+      ],
+      hoh: [
+        { rate: 0.039, upTo: 12800 },
+        { rate: 0.044, upTo: 17650 },
+        { rate: 0.0515, upTo: 20900 },
+        { rate: 0.054, upTo: 107650 },
+        { rate: 0.059, upTo: 269300 },
+        { rate: 0.0685, upTo: 1616450 },
+        { rate: 0.0965, upTo: 5000000 },
+        { rate: 0.103, upTo: 25000000 },
+        { rate: 0.109, upTo: Infinity },
+      ],
+      mfs: [
+        { rate: 0.039, upTo: 8500 },
+        { rate: 0.044, upTo: 11700 },
+        { rate: 0.0515, upTo: 13900 },
+        { rate: 0.054, upTo: 80650 },
+        { rate: 0.059, upTo: 215400 },
+        { rate: 0.0685, upTo: 1077550 },
+        { rate: 0.0965, upTo: 5000000 },
+        { rate: 0.103, upTo: 25000000 },
+        { rate: 0.109, upTo: Infinity },
+      ],
+    },
   },
   other: {
     name: "Other / Progressive state — enter effective rate",
@@ -260,6 +413,9 @@ export function bracketBreakdown(
 interface ScenarioInput {
   gross: number;
   bonus: number;
+  // RSU vest value included in `gross`. Tracked separately so it can be
+  // excluded from the 401(k) deferral base (RSUs are not deferrable).
+  rsu?: number;
   filingStatus: FilingStatus;
   trad401k: number;
   roth401k: number;
@@ -271,6 +427,10 @@ interface ScenarioInput {
   // overrides `stateRate`.
   stateBrackets?: Bracket[];
   stateStdDed: number;
+  // Whether the state recognizes 401(k)/Section 125 pre-tax treatment.
+  // Default true; set false for states like PA. See StateDef above.
+  stateAllows401k?: boolean;
+  stateAllowsSection125?: boolean;
 }
 
 export interface ScenarioResult {
@@ -297,6 +457,7 @@ export function scenario(inp: ScenarioInput): ScenarioResult {
   const {
     gross,
     bonus,
+    rsu = 0,
     filingStatus,
     trad401k,
     roth401k,
@@ -305,11 +466,28 @@ export function scenario(inp: ScenarioInput): ScenarioResult {
     stateRate,
     stateBrackets,
     stateStdDed,
+    stateAllows401k = true,
+    stateAllowsSection125 = true,
   } = inp;
 
-  const contributable = gross - bonus + (defer401kFromBonus ? bonus : 0);
-  const trad401kAmt = contributable * (trad401k / 100);
-  const roth401kAmt = contributable * (roth401k / 100);
+  // 401(k) elective deferrals come out of regular wages plus (optionally) the
+  // cash bonus. RSU vest value is never 401(k)-deferrable, so subtract both the
+  // bonus and the RSU value from gross to get the base, then add the bonus back
+  // only when the user defers from it.
+  const contributable =
+    gross - bonus - rsu + (defer401kFromBonus ? bonus : 0);
+  // Traditional + Roth elective deferrals share one annual 402(g) limit. If the
+  // requested percentages would exceed it, scale both down proportionally so
+  // the combined deferral never exceeds the statutory cap.
+  const rawTrad = contributable * (trad401k / 100);
+  const rawRoth = contributable * (roth401k / 100);
+  const rawTotal = rawTrad + rawRoth;
+  const deferralScale =
+    rawTotal > EMPLOYEE_401K_LIMIT_2026
+      ? EMPLOYEE_401K_LIMIT_2026 / rawTotal
+      : 1;
+  const trad401kAmt = rawTrad * deferralScale;
+  const roth401kAmt = rawRoth * deferralScale;
   const ficaWages = Math.max(0, gross - section125);
   const fedWages = Math.max(0, gross - section125 - trad401kAmt);
   const ss = Math.min(ficaWages, SS_WAGE_BASE_2026) * SS_RATE;
@@ -320,7 +498,16 @@ export function scenario(inp: ScenarioInput): ScenarioResult {
   const fedStdDed = FED_STD_DEDUCTION_2026[filingStatus];
   const fedTaxable = Math.max(0, fedWages - fedStdDed);
   const fedTax = calcBracketTax(fedTaxable, FEDERAL_BRACKETS_2026[filingStatus]);
-  const stateTaxable = Math.max(0, fedWages - stateStdDed);
+  // Most states mirror the federal pre-tax treatment of 401(k)/Section 125, so
+  // the state base equals fedWages. For states that don't (e.g. PA), add those
+  // contributions back by deriving the base from gross directly.
+  const stateWages = Math.max(
+    0,
+    gross -
+      (stateAllowsSection125 ? section125 : 0) -
+      (stateAllows401k ? trad401kAmt : 0),
+  );
+  const stateTaxable = Math.max(0, stateWages - stateStdDed);
   const stateTax = stateBrackets
     ? calcBracketTax(stateTaxable, stateBrackets)
     : stateTaxable * stateRate;
@@ -414,7 +601,12 @@ export function calculateAll(inp: CalcInput): CalcResult {
   const r = Math.max(0, rsuValue || 0);
   const supplemental = b + r;
   const totalGross = s + b + r;
-  const section125 = hsa + healthPremium + fsa + otherPreTax;
+  // Bound pre-tax deductions to [0, gross] so unrealistic inputs can't shield
+  // more than the user earns or drive taxable wages negative.
+  const section125 = Math.min(
+    Math.max(0, hsa + healthPremium + fsa + otherPreTax),
+    totalGross,
+  );
 
   const stateDef = STATES[stateKey];
   const stateBrackets = stateDef.brackets?.[filingStatus];
@@ -426,10 +618,13 @@ export function calculateAll(inp: CalcInput): CalcResult {
       ? (customStateRate || 0) / 100
       : stateDef.rate || 0;
   const stateStdDed = stateDef.stdDed[filingStatus] || 0;
+  const stateAllows401k = stateDef.allow401kDeduction ?? true;
+  const stateAllowsSection125 = stateDef.allowSection125 ?? true;
 
   const full = scenario({
     gross: totalGross,
     bonus: b,
+    rsu: r,
     filingStatus,
     trad401k,
     roth401k,
@@ -438,11 +633,14 @@ export function calculateAll(inp: CalcInput): CalcResult {
     stateRate: flatStateRate,
     stateBrackets,
     stateStdDed,
+    stateAllows401k,
+    stateAllowsSection125,
   });
 
   const salaryOnly = scenario({
     gross: s,
     bonus: 0,
+    rsu: 0,
     filingStatus,
     trad401k,
     roth401k,
@@ -451,6 +649,8 @@ export function calculateAll(inp: CalcInput): CalcResult {
     stateRate: flatStateRate,
     stateBrackets,
     stateStdDed,
+    stateAllows401k,
+    stateAllowsSection125,
   });
 
   // Rate shown in the UI ("plus state X%"). For flat states this equals the
@@ -481,8 +681,12 @@ export function calculateAll(inp: CalcInput): CalcResult {
 
   const preTaxDeductions = full.trad401kAmt + section125;
   const postTaxDeductions = full.roth401kAmt + (otherPostTax || 0);
-  const takeHome =
-    totalGross - full.totalTax - preTaxDeductions - postTaxDeductions;
+  // Floor at zero: deductions plus tax can exceed gross for nonsensical inputs,
+  // but a negative take-home is never a meaningful figure to display.
+  const takeHome = Math.max(
+    0,
+    totalGross - full.totalTax - preTaxDeductions - postTaxDeductions,
+  );
 
   return {
     inputs: { salary: s, bonus: b, rsuValue: r, supplemental, totalGross },

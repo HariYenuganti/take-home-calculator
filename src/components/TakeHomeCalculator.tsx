@@ -2,15 +2,18 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { calculateAll } from "@/lib/tax";
-import { fmt, fmtPct, fmtSigned } from "@/lib/format";
+import { fmt, fmtPct, fmtSigned, pctDelta } from "@/lib/format";
 import {
   type CalcState,
   DEFAULT_STATE,
+  SERIALIZATION_BASELINE,
+  deriveSalary,
   parseComparison,
   serializeComparison,
 } from "@/lib/urlState";
 import ScenarioInputs from "./ScenarioInputs";
 import ScenarioDetail from "./ScenarioDetail";
+import MarginalDollar from "./MarginalDollar";
 
 export default function TakeHomeCalculator() {
   const [state, setState] = useState<CalcState>(DEFAULT_STATE);
@@ -28,15 +31,54 @@ export default function TakeHomeCalculator() {
     setScenarioB((prev) => (prev ? null : { ...state }));
   };
 
+  // Restore the default scenario and drop compare mode. The URL-sync effect
+  // then collapses the query string back to a bare path.
+  const handleReset = () => {
+    setState(DEFAULT_STATE);
+    setScenarioB(null);
+  };
+
+  // Theme toggle. The <html data-theme> is set pre-paint by the inline script
+  // in layout; here we mirror it into state and flip it on click.
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+  useEffect(() => {
+    // One-time sync from the pre-paint theme on <html> (external DOM source).
+    const current = document.documentElement.dataset.theme;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (current === "dark" || current === "light") setTheme(current);
+  }, []);
+  const toggleTheme = () => {
+    setTheme((prev) => {
+      const next = prev === "dark" ? "light" : "dark";
+      document.documentElement.dataset.theme = next;
+      try {
+        localStorage.setItem("theme", next);
+      } catch {
+        /* localStorage unavailable */
+      }
+      return next;
+    });
+  };
+
   const [linkCopied, setLinkCopied] = useState(false);
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
   const handleCopyLink = async () => {
+    // Build the link from current state rather than reading location.href,
+    // which the debounced URL sync may not have caught up to yet.
+    const qs = serializeComparison(state, scenarioB);
+    const url =
+      window.location.origin +
+      window.location.pathname +
+      (qs ? `?${qs}` : "");
     try {
-      await navigator.clipboard.writeText(window.location.href);
+      await navigator.clipboard.writeText(url);
       setLinkCopied(true);
+      setFailedUrl(null);
       window.setTimeout(() => setLinkCopied(false), 1500);
     } catch {
-      // Clipboard API blocked (non-https, sandboxed iframe, etc.). Silent
-      // failure — the user can still copy from the address bar.
+      // Clipboard API blocked (non-https, sandboxed iframe, etc.). Reveal the
+      // URL so the user can select and copy it manually.
+      setFailedUrl(url);
     }
   };
 
@@ -50,10 +92,10 @@ export default function TakeHomeCalculator() {
     /* eslint-disable react-hooks/set-state-in-effect -- legitimate one-time
        hydration from window.location (external source, not derived state) */
     if (Object.keys(a).length > 0) {
-      setState((prev) => ({ ...prev, ...a }));
+      setState({ ...SERIALIZATION_BASELINE, ...a });
     }
     if (b !== null) {
-      setScenarioB({ ...DEFAULT_STATE, ...b });
+      setScenarioB({ ...SERIALIZATION_BASELINE, ...b });
     }
     /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
@@ -61,26 +103,18 @@ export default function TakeHomeCalculator() {
   // Keep the URL in sync with current state so every change is shareable.
   // Uses replaceState so the back button isn't polluted by each keystroke.
   useEffect(() => {
-    const qs = serializeComparison(state, scenarioB);
-    const next = qs
-      ? `${window.location.pathname}?${qs}`
-      : window.location.pathname;
-    window.history.replaceState(null, "", next);
+    // Debounced so fast typing coalesces into a single history write.
+    const t = window.setTimeout(() => {
+      const qs = serializeComparison(state, scenarioB);
+      const next = qs
+        ? `${window.location.pathname}?${qs}`
+        : window.location.pathname;
+      window.history.replaceState(null, "", next);
+    }, 200);
+    return () => window.clearTimeout(t);
   }, [state, scenarioB]);
 
-  const salary = useMemo(
-    () =>
-      state.payType === "annual"
-        ? state.annualSalary
-        : state.hourlyRate * state.hoursPerWeek * state.weeksPerYear,
-    [
-      state.payType,
-      state.annualSalary,
-      state.hourlyRate,
-      state.hoursPerWeek,
-      state.weeksPerYear,
-    ],
-  );
+  const salary = useMemo(() => deriveSalary(state), [state]);
 
   const result = useMemo(
     () => calculateAll({ ...state, salary }),
@@ -89,51 +123,50 @@ export default function TakeHomeCalculator() {
 
   const resultB = useMemo(() => {
     if (!scenarioB) return null;
-    const salaryB =
-      scenarioB.payType === "annual"
-        ? scenarioB.annualSalary
-        : scenarioB.hourlyRate *
-          scenarioB.hoursPerWeek *
-          scenarioB.weeksPerYear;
-    return calculateAll({ ...scenarioB, salary: salaryB });
+    return calculateAll({ ...scenarioB, salary: deriveSalary(scenarioB) });
   }, [scenarioB]);
 
   const hasSupplemental = result.supp.gross > 0;
 
-  return (
-    <div className="min-h-screen w-full" style={{ background: "#F5F1E8" }}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
-        .serif { font-family: 'Instrument Serif', 'Times New Roman', serif; font-weight: 400; letter-spacing: -0.01em; }
-        .sans  { font-family: 'IBM Plex Sans', system-ui, sans-serif; }
-        .mono  { font-family: 'IBM Plex Mono', 'Menlo', monospace; }
-        .numeric { font-variant-numeric: tabular-nums; }
-        input[type=number]::-webkit-outer-spin-button,
-        input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        input[type=number] { -moz-appearance: textfield; }
-        .fld { background: #FFFDF7; border: 1px solid #D9D2C1; padding: 10px 12px; font-size: 14px; width: 100%; transition: border-color 0.15s; font-family: 'IBM Plex Mono', monospace; }
-        .fld:focus { outline: none; border-color: #0E3B2E; }
-        .fld-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em; color: #4A4638; margin-bottom: 6px; display: block; font-family: 'IBM Plex Sans', sans-serif; }
-        .seg { display: flex; background: #EDE6D4; padding: 3px; }
-        .seg button { flex: 1; padding: 7px 10px; font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; background: transparent; border: none; cursor: pointer; color: #6B6550; font-family: 'IBM Plex Sans', sans-serif; }
-        .seg button.active { background: #0E3B2E; color: #F5F1E8; }
-        .checkbox-row { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; color: #4A4638; margin-top: 10px; cursor: pointer; line-height: 1.4; }
-        .checkbox-row input { accent-color: #0E3B2E; margin-top: 2px; }
-      `}</style>
+  // Debounced screen-reader announcement of the headline result, so SR users
+  // hear the take-home / April-surprise change after typing settles rather
+  // than on every keystroke.
+  const [liveMessage, setLiveMessage] = useState("");
+  useEffect(() => {
+    const t = window.setTimeout(() => {
+      let msg = `Annual take-home ${fmt(result.takeHome)}.`;
+      if (hasSupplemental && result.supp.gap > 0.5) {
+        msg += ` Under-withheld on bonus and RSU by ${fmt(result.supp.gap)}; expect to owe at filing.`;
+      } else if (hasSupplemental && result.supp.gap < -0.5) {
+        msg += ` Over-withheld on bonus and RSU by ${fmt(Math.abs(result.supp.gap))}; expect a refund.`;
+      }
+      setLiveMessage(msg);
+    }, 600);
+    return () => window.clearTimeout(t);
+  }, [result, hasSupplemental]);
 
+  return (
+    <div className="min-h-screen w-full" style={{ background: "var(--c-bg)" }}>
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-50 mono text-[11px] px-3 py-2"
+        style={{ background: "var(--c-forest)", color: "var(--c-on-forest)" }}
+      >
+        Skip to main content
+      </a>
       <div
         className="max-w-[1280px] mx-auto px-6 md:px-10 py-10 md:py-14 sans"
-        style={{ color: "#1A1812" }}
+        style={{ color: "var(--c-ink)" }}
       >
         <header
           className="border-b pb-6 mb-10"
-          style={{ borderColor: "#1A1812" }}
+          style={{ borderColor: "var(--c-ink)" }}
         >
           <div className="flex items-end justify-between flex-wrap gap-3">
             <div>
               <div
                 className="mono text-[10px] uppercase tracking-[0.2em]"
-                style={{ color: "#0E3B2E" }}
+                style={{ color: "var(--c-forest)" }}
               >
                 Take-Home Ledger · Tax Year 2026 · With Supplemental Wages
               </div>
@@ -142,23 +175,78 @@ export default function TakeHomeCalculator() {
               </h1>
             </div>
             <div className="flex flex-col items-end gap-3 max-w-[280px]">
-              <button
-                type="button"
-                onClick={handleCopyLink}
-                aria-label="Copy shareable link to this scenario"
-                className="mono uppercase tracking-[0.15em] text-[10px] px-3 py-2 transition-colors cursor-pointer"
-                style={{
-                  border: "1px solid #1A1812",
-                  color: linkCopied ? "#F5F1E8" : "#1A1812",
-                  background: linkCopied ? "#0E3B2E" : "transparent",
-                  minWidth: "148px",
-                }}
-              >
-                {linkCopied ? "Link copied" : "Copy share link"}
-              </button>
+              <div className="flex gap-2 no-print">
+                <button
+                  type="button"
+                  onClick={handleCopyLink}
+                  aria-label="Copy shareable link to this scenario"
+                  className="mono uppercase tracking-[0.15em] text-[10px] px-3 py-2 transition-colors cursor-pointer"
+                  style={{
+                    border: "1px solid var(--c-ink)",
+                    color: linkCopied ? "var(--c-on-forest)" : "var(--c-ink)",
+                    background: linkCopied ? "var(--c-forest)" : "transparent",
+                    minWidth: "148px",
+                  }}
+                >
+                  {linkCopied ? "Link copied" : "Copy share link"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleReset}
+                  aria-label="Reset to defaults and clear the shared link"
+                  className="mono uppercase tracking-[0.15em] text-[10px] px-3 py-2 transition-colors cursor-pointer"
+                  style={{
+                    border: "1px solid var(--c-ink)",
+                    color: "var(--c-ink)",
+                    background: "transparent",
+                  }}
+                >
+                  Reset
+                </button>
+                <button
+                  type="button"
+                  onClick={toggleTheme}
+                  aria-label={
+                    theme === "dark"
+                      ? "Switch to light theme"
+                      : "Switch to dark theme"
+                  }
+                  className="mono uppercase tracking-[0.15em] text-[10px] px-3 py-2 transition-colors cursor-pointer"
+                  style={{
+                    border: "1px solid var(--c-ink)",
+                    color: "var(--c-ink)",
+                    background: "transparent",
+                  }}
+                >
+                  {theme === "dark" ? "Light" : "Dark"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  aria-label="Print or save this scenario as a PDF"
+                  className="mono uppercase tracking-[0.15em] text-[10px] px-3 py-2 transition-colors cursor-pointer"
+                  style={{
+                    border: "1px solid var(--c-ink)",
+                    color: "var(--c-ink)",
+                    background: "transparent",
+                  }}
+                >
+                  PDF
+                </button>
+              </div>
+              {failedUrl && (
+                <input
+                  readOnly
+                  value={failedUrl}
+                  onFocus={(e) => e.target.select()}
+                  aria-label="Shareable link — copy it manually"
+                  className="fld mono"
+                  style={{ width: "260px", fontSize: "11px" }}
+                />
+              )}
               <div
                 className="mono text-[11px]"
-                style={{ color: "#4A4638" }}
+                style={{ color: "var(--c-muted-strong)" }}
               >
                 2026 brackets per IRS Rev. Proc. 2025-32. SS wage base
                 $184,500. Supplemental withheld at 22% fed (37% over $1M/yr)
@@ -168,19 +256,23 @@ export default function TakeHomeCalculator() {
           </div>
         </header>
 
-        <div
+        <main
+          id="main"
           className={
             compareMode
               ? "space-y-8"
               : "grid grid-cols-1 lg:grid-cols-12 gap-8"
           }
         >
+          <div className="sr-only" role="status" aria-live="polite">
+            {liveMessage}
+          </div>
           {compareMode && scenarioB && resultB ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div>
                 <div
                   className="mono text-[10px] uppercase tracking-[0.15em] mb-5 pb-2 border-b"
-                  style={{ color: "#0E3B2E", borderColor: "#0E3B2E" }}
+                  style={{ color: "var(--c-forest)", borderColor: "var(--c-forest)" }}
                 >
                   Scenario A · current
                 </div>
@@ -193,7 +285,7 @@ export default function TakeHomeCalculator() {
               <div>
                 <div
                   className="mono text-[10px] uppercase tracking-[0.15em] mb-5 pb-2 border-b"
-                  style={{ color: "#A84D1E", borderColor: "#A84D1E" }}
+                  style={{ color: "var(--c-rust)", borderColor: "var(--c-rust)" }}
                 >
                   Scenario B · compare
                 </div>
@@ -205,7 +297,7 @@ export default function TakeHomeCalculator() {
               </div>
             </div>
           ) : (
-            <section className="lg:col-span-5">
+            <section className="lg:col-span-5" aria-label="Your inputs">
               <ScenarioInputs
                 state={state}
                 onChange={updateState}
@@ -215,6 +307,7 @@ export default function TakeHomeCalculator() {
           )}
 
           <section
+            aria-label="Results"
             className={
               compareMode ? "space-y-6" : "lg:col-span-7 space-y-6"
             }
@@ -222,7 +315,7 @@ export default function TakeHomeCalculator() {
             {compareMode && resultB ? (
               <div
                 className="relative overflow-hidden p-8 md:p-10"
-                style={{ background: "#0E3B2E", color: "#F5F1E8" }}
+                style={{ background: "var(--c-forest)", color: "var(--c-on-forest)" }}
               >
                 <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
                   <div className="mono text-[10px] uppercase tracking-[0.2em] opacity-70">
@@ -235,7 +328,7 @@ export default function TakeHomeCalculator() {
                     className="mono uppercase tracking-[0.15em] text-[10px] px-3 py-2 transition-colors cursor-pointer"
                     style={{
                       border: "1px solid rgba(245,241,232,0.35)",
-                      color: "#F5F1E8",
+                      color: "var(--c-on-forest)",
                       background: "transparent",
                     }}
                   >
@@ -267,7 +360,7 @@ export default function TakeHomeCalculator() {
                   <div>
                     <div
                       className="mono text-[10px] uppercase tracking-[0.15em]"
-                      style={{ color: "#C99742" }}
+                      style={{ color: "var(--c-gold)" }}
                     >
                       Scenario B · compare
                     </div>
@@ -294,19 +387,19 @@ export default function TakeHomeCalculator() {
                   >
                     <div
                       className="mono text-[10px] uppercase tracking-[0.15em]"
-                      style={{ color: "#C99742" }}
+                      style={{ color: "var(--c-gold)" }}
                     >
                       Δ B minus A
                     </div>
                     <div
                       className="serif text-[56px] md:text-[64px] leading-[0.95] mt-1 numeric"
-                      style={{ color: "#C99742" }}
+                      style={{ color: "var(--c-gold)" }}
                     >
                       {fmtSigned(resultB.takeHome - result.takeHome)}
                     </div>
                     <div
                       className="mono text-xs mt-3 numeric"
-                      style={{ lineHeight: 1.7, color: "#C99742" }}
+                      style={{ lineHeight: 1.7, color: "var(--c-gold)" }}
                     >
                       Effective {pctDelta(resultB.effectiveRate, result.effectiveRate)}
                       <br />
@@ -320,7 +413,7 @@ export default function TakeHomeCalculator() {
             ) : (
               <div
                 className="relative overflow-hidden p-8 md:p-10"
-                style={{ background: "#0E3B2E", color: "#F5F1E8" }}
+                style={{ background: "var(--c-forest)", color: "var(--c-on-forest)" }}
               >
                 <div className="absolute top-4 right-6 mono text-[10px] uppercase tracking-[0.2em] opacity-60">
                   annual take-home
@@ -373,11 +466,11 @@ export default function TakeHomeCalculator() {
                     type="button"
                     onClick={toggleCompare}
                     aria-label="Compare this scenario with another side-by-side"
-                    className="mono uppercase tracking-[0.15em] text-[10px] px-3 py-2 transition-colors cursor-pointer"
+                    className="mono uppercase tracking-[0.15em] text-[10px] px-4 py-2 transition-colors cursor-pointer no-print"
                     style={{
-                      border: "1px solid rgba(245,241,232,0.35)",
-                      color: "#F5F1E8",
-                      background: "transparent",
+                      border: "1px solid var(--c-gold)",
+                      color: "var(--c-ink)",
+                      background: "var(--c-gold)",
                     }}
                   >
                     + Compare with another scenario
@@ -392,29 +485,35 @@ export default function TakeHomeCalculator() {
                   result={result}
                   otherPostTax={state.otherPostTax}
                   label="Scenario A · current"
-                  accent="#0E3B2E"
+                  accent="var(--c-forest)"
                 />
                 <ScenarioDetail
                   result={resultB}
                   otherPostTax={scenarioB.otherPostTax}
                   label="Scenario B · compare"
-                  accent="#A84D1E"
+                  accent="var(--c-rust)"
                 />
               </>
             ) : (
-              <ScenarioDetail
-                result={result}
-                otherPostTax={state.otherPostTax}
-              />
+              <>
+                <ScenarioDetail
+                  result={result}
+                  otherPostTax={state.otherPostTax}
+                />
+                <MarginalDollar
+                  base={{ ...state, salary }}
+                  baseResult={result}
+                />
+              </>
             )}
 
             <div
               className="text-xs leading-relaxed mono"
-              style={{ color: "#4A4638" }}
+              style={{ color: "var(--c-muted-strong)" }}
             >
               <div
                 className="mb-1 uppercase tracking-[0.15em] text-[10px]"
-                style={{ color: "#0E3B2E" }}
+                style={{ color: "var(--c-forest)" }}
               >
                 Notes & caveats
               </div>
@@ -429,11 +528,11 @@ export default function TakeHomeCalculator() {
               — not tax advice.
             </div>
           </section>
-        </div>
+        </main>
 
         <footer
           className="mt-14 pt-6 border-t flex justify-between items-center mono text-[10px] uppercase tracking-[0.2em]"
-          style={{ borderColor: "#1A1812", color: "#6B6550" }}
+          style={{ borderColor: "var(--c-ink)", color: "var(--c-muted)" }}
         >
           <span>Tax Year 2026</span>
           <span>Defaults: single filer · North Carolina</span>
@@ -441,12 +540,4 @@ export default function TakeHomeCalculator() {
       </div>
     </div>
   );
-}
-
-// Format a delta between two rates as signed percentage points.
-// e.g. pctDelta(0.24, 0.22) -> "+2.00 pp"
-function pctDelta(b: number, a: number): string {
-  const diff = (b - a) * 100;
-  const sign = diff >= 0 ? "+" : "\u2212";
-  return `${sign}${Math.abs(diff).toFixed(2)} pp`;
 }

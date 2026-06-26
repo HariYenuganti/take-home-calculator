@@ -7,7 +7,8 @@ import {
   type FilingStatus,
 } from "@/lib/tax";
 import { fmt } from "@/lib/format";
-import { type CalcState } from "@/lib/urlState";
+import { type CalcState, deriveSalary } from "@/lib/urlState";
+import NumberField from "./NumberField";
 
 interface Props {
   state: CalcState;
@@ -16,19 +17,9 @@ interface Props {
 }
 
 export default function ScenarioInputs({ state, onChange, result }: Props) {
-  const salary =
-    state.payType === "annual"
-      ? state.annualSalary
-      : state.hourlyRate * state.hoursPerWeek * state.weeksPerYear;
+  const salary = deriveSalary(state);
   const totalContributions = result.trad401kAmt + result.roth401kAmt;
   const employerMatchAmt = salary * (state.employerMatch / 100);
-
-  const num =
-    <K extends keyof CalcState>(key: K) =>
-    (e: React.ChangeEvent<HTMLInputElement>) =>
-      onChange({ [key]: (+e.target.value || 0) as CalcState[K] } as Partial<
-        CalcState
-      >);
 
   return (
     <div className="space-y-7">
@@ -38,19 +29,23 @@ export default function ScenarioInputs({ state, onChange, result }: Props) {
           <h2 className="serif text-2xl">01 · Base Income</h2>
           <span
             className="mono text-[10px] uppercase tracking-[0.15em]"
-            style={{ color: "#6B6550" }}
+            style={{ color: "var(--c-muted)" }}
           >
             regular wages
           </span>
         </div>
-        <div className="seg mb-4">
+        <div className="seg mb-4" role="group" aria-label="Pay type">
           <button
+            type="button"
+            aria-pressed={state.payType === "annual"}
             className={state.payType === "annual" ? "active" : ""}
             onClick={() => onChange({ payType: "annual" })}
           >
             Salary
           </button>
           <button
+            type="button"
+            aria-pressed={state.payType === "hourly"}
             className={state.payType === "hourly" ? "active" : ""}
             onClick={() => onChange({ payType: "hourly" })}
           >
@@ -58,49 +53,39 @@ export default function ScenarioInputs({ state, onChange, result }: Props) {
           </button>
         </div>
         {state.payType === "annual" ? (
-          <label className="block">
-            <span className="fld-label">Annual salary</span>
-            <input
-              type="number"
-              className="fld numeric"
-              value={state.annualSalary}
-              onChange={num("annualSalary")}
-            />
-          </label>
+          <NumberField
+            label="Annual salary"
+            value={state.annualSalary}
+            onChange={(v) => onChange({ annualSalary: v })}
+            min={0}
+          />
         ) : (
-          <div className="grid grid-cols-3 gap-3">
-            <label className="block">
-              <span className="fld-label">Rate / hr</span>
-              <input
-                type="number"
-                className="fld numeric"
-                value={state.hourlyRate}
-                onChange={num("hourlyRate")}
-              />
-            </label>
-            <label className="block">
-              <span className="fld-label">Hrs / week</span>
-              <input
-                type="number"
-                className="fld numeric"
-                value={state.hoursPerWeek}
-                onChange={num("hoursPerWeek")}
-              />
-            </label>
-            <label className="block">
-              <span className="fld-label">Weeks / yr</span>
-              <input
-                type="number"
-                className="fld numeric"
-                value={state.weeksPerYear}
-                onChange={num("weeksPerYear")}
-              />
-            </label>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <NumberField
+              label="Rate / hr"
+              value={state.hourlyRate}
+              onChange={(v) => onChange({ hourlyRate: v })}
+              min={0}
+            />
+            <NumberField
+              label="Hrs / week"
+              value={state.hoursPerWeek}
+              onChange={(v) => onChange({ hoursPerWeek: v })}
+              min={0}
+              max={168}
+            />
+            <NumberField
+              label="Weeks / yr"
+              value={state.weeksPerYear}
+              onChange={(v) => onChange({ weeksPerYear: v })}
+              min={0}
+              max={52}
+            />
           </div>
         )}
         <div
           className="mt-3 mono text-xs numeric"
-          style={{ color: "#6B6550" }}
+          style={{ color: "var(--c-muted)" }}
         >
           Salary = {fmt(salary)} / year
         </div>
@@ -112,30 +97,24 @@ export default function ScenarioInputs({ state, onChange, result }: Props) {
           <h2 className="serif text-2xl">02 · Bonus & Equity</h2>
           <span
             className="mono text-[10px] uppercase tracking-[0.15em]"
-            style={{ color: "#6B6550" }}
+            style={{ color: "var(--c-muted)" }}
           >
             supplemental wages
           </span>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <label className="block">
-            <span className="fld-label">Annual cash bonus</span>
-            <input
-              type="number"
-              className="fld numeric"
-              value={state.bonus}
-              onChange={num("bonus")}
-            />
-          </label>
-          <label className="block">
-            <span className="fld-label">RSU vest value / yr</span>
-            <input
-              type="number"
-              className="fld numeric"
-              value={state.rsuValue}
-              onChange={num("rsuValue")}
-            />
-          </label>
+          <NumberField
+            label="Annual cash bonus"
+            value={state.bonus}
+            onChange={(v) => onChange({ bonus: v })}
+            min={0}
+          />
+          <NumberField
+            label="RSU vest value / yr"
+            value={state.rsuValue}
+            onChange={(v) => onChange({ rsuValue: v })}
+            min={0}
+          />
         </div>
         <label className="checkbox-row">
           <input
@@ -152,7 +131,7 @@ export default function ScenarioInputs({ state, onChange, result }: Props) {
         </label>
         <div
           className="mt-3 mono text-xs numeric"
-          style={{ color: "#6B6550" }}
+          style={{ color: "var(--c-muted)" }}
         >
           Total comp = {fmt(salary + state.bonus + state.rsuValue)} ·
           Supplemental = {fmt(state.bonus + state.rsuValue)}
@@ -196,18 +175,15 @@ export default function ScenarioInputs({ state, onChange, result }: Props) {
           </label>
         </div>
         {state.stateKey === "other" && (
-          <label className="block mt-3">
-            <span className="fld-label">
-              Your effective state tax rate (%)
-            </span>
-            <input
-              type="number"
-              step="0.01"
-              className="fld numeric"
+          <div className="mt-3">
+            <NumberField
+              label="Your effective state tax rate (%)"
               value={state.customStateRate}
-              onChange={num("customStateRate")}
+              onChange={(v) => onChange({ customStateRate: v })}
+              min={0}
+              max={20}
             />
-          </label>
+          </div>
         )}
       </div>
 
@@ -217,51 +193,39 @@ export default function ScenarioInputs({ state, onChange, result }: Props) {
           <h2 className="serif text-2xl">04 · Retirement</h2>
           <span
             className="mono text-[10px] uppercase tracking-[0.15em]"
-            style={{ color: "#6B6550" }}
+            style={{ color: "var(--c-muted)" }}
           >
             % of contributable wages
           </span>
         </div>
-        <div className="grid grid-cols-3 gap-3">
-          <label className="block">
-            <span className="fld-label">Trad 401(k)</span>
-            <input
-              type="number"
-              step="0.5"
-              className="fld numeric"
-              value={state.trad401k}
-              onChange={num("trad401k")}
-            />
-          </label>
-          <label className="block">
-            <span className="fld-label">Roth 401(k)</span>
-            <input
-              type="number"
-              step="0.5"
-              className="fld numeric"
-              value={state.roth401k}
-              onChange={num("roth401k")}
-            />
-          </label>
-          <label className="block">
-            <span className="fld-label">Employer match</span>
-            <input
-              type="number"
-              step="0.5"
-              className="fld numeric"
-              value={state.employerMatch}
-              onChange={num("employerMatch")}
-            />
-          </label>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <NumberField
+            label="Trad 401(k)"
+            value={state.trad401k}
+            onChange={(v) => onChange({ trad401k: v })}
+            min={0}
+            max={100}          />
+          <NumberField
+            label="Roth 401(k)"
+            value={state.roth401k}
+            onChange={(v) => onChange({ roth401k: v })}
+            min={0}
+            max={100}          />
+          <NumberField
+            label="Employer match"
+            value={state.employerMatch}
+            onChange={(v) => onChange({ employerMatch: v })}
+            min={0}
+            max={100}          />
         </div>
         <div
           className="mt-3 mono text-xs numeric"
-          style={{ color: "#6B6550" }}
+          style={{ color: "var(--c-muted)" }}
         >
           Your contributions: {fmt(totalContributions)} · Employer match:{" "}
           {fmt(employerMatchAmt)}
           {totalContributions > EMPLOYEE_401K_LIMIT_2026 && (
-            <div style={{ color: "#A84D1E" }} className="mt-1">
+            <div style={{ color: "var(--c-rust)" }} className="mt-1" role="alert">
               ⚠ Exceeds 2026 employee limit of{" "}
               {fmt(EMPLOYEE_401K_LIMIT_2026)}.
             </div>
@@ -275,48 +239,36 @@ export default function ScenarioInputs({ state, onChange, result }: Props) {
           <h2 className="serif text-2xl">05 · Pre-tax Deductions</h2>
           <span
             className="mono text-[10px] uppercase tracking-[0.15em]"
-            style={{ color: "#6B6550" }}
+            style={{ color: "var(--c-muted)" }}
           >
             annual $
           </span>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <label className="block">
-            <span className="fld-label">HSA</span>
-            <input
-              type="number"
-              className="fld numeric"
-              value={state.hsa}
-              onChange={num("hsa")}
-            />
-          </label>
-          <label className="block">
-            <span className="fld-label">Health premium</span>
-            <input
-              type="number"
-              className="fld numeric"
-              value={state.healthPremium}
-              onChange={num("healthPremium")}
-            />
-          </label>
-          <label className="block">
-            <span className="fld-label">FSA</span>
-            <input
-              type="number"
-              className="fld numeric"
-              value={state.fsa}
-              onChange={num("fsa")}
-            />
-          </label>
-          <label className="block">
-            <span className="fld-label">Other pre-tax</span>
-            <input
-              type="number"
-              className="fld numeric"
-              value={state.otherPreTax}
-              onChange={num("otherPreTax")}
-            />
-          </label>
+          <NumberField
+            label="HSA"
+            value={state.hsa}
+            onChange={(v) => onChange({ hsa: v })}
+            min={0}
+          />
+          <NumberField
+            label="Health premium"
+            value={state.healthPremium}
+            onChange={(v) => onChange({ healthPremium: v })}
+            min={0}
+          />
+          <NumberField
+            label="FSA"
+            value={state.fsa}
+            onChange={(v) => onChange({ fsa: v })}
+            min={0}
+          />
+          <NumberField
+            label="Other pre-tax"
+            value={state.otherPreTax}
+            onChange={(v) => onChange({ otherPreTax: v })}
+            min={0}
+          />
         </div>
       </div>
 
@@ -325,15 +277,12 @@ export default function ScenarioInputs({ state, onChange, result }: Props) {
         <div className="flex items-baseline justify-between mb-3">
           <h2 className="serif text-2xl">06 · Post-tax Deductions</h2>
         </div>
-        <label className="block">
-          <span className="fld-label">Other post-tax (annual $)</span>
-          <input
-            type="number"
-            className="fld numeric"
-            value={state.otherPostTax}
-            onChange={num("otherPostTax")}
-          />
-        </label>
+        <NumberField
+          label="Other post-tax (annual $)"
+          value={state.otherPostTax}
+          onChange={(v) => onChange({ otherPostTax: v })}
+          min={0}
+        />
       </div>
     </div>
   );

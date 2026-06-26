@@ -5,15 +5,18 @@ import {
   bracketBreakdown,
   calcBracketTax,
   calculateAll,
+  EMPLOYEE_401K_LIMIT_2026,
   FED_STD_DEDUCTION_2026,
   FED_SUPP_MILLION_CAP,
   FED_SUPP_RATE,
   FED_SUPP_RATE_HIGH,
   FEDERAL_BRACKETS_2026,
+  MA_SURTAX_THRESHOLD_2026,
   marginalRate,
   MEDICARE_RATE,
   SS_RATE,
   SS_WAGE_BASE_2026,
+  STATES,
   scenario,
   type CalcInput,
   type FilingStatus,
@@ -199,6 +202,57 @@ describe("Pre-tax deductions", () => {
     expect(withDeferral.fedTax).toBeLessThan(withoutDeferral.fedTax);
   });
 
+  it("excludes RSU vest value from the 401(k) deferral base", () => {
+    // RSUs are not 401(k)-deferrable. A 10% deferral on $100k salary + $100k
+    // RSU must compute on the $100k salary only ($10k), not on $200k ($20k).
+    const r = calculateAll(
+      baseInput({ salary: 100000, rsuValue: 100000, trad401k: 10 }),
+    );
+    expect(r.trad401kAmt).toBeCloseTo(10000, 2);
+  });
+
+  it("includes the bonus in the 401(k) base only when deferral is enabled", () => {
+    const off = calculateAll(
+      baseInput({
+        salary: 100000,
+        bonus: 50000,
+        rsuValue: 50000,
+        trad401k: 10,
+        defer401kFromBonus: false,
+      }),
+    );
+    const on = calculateAll(
+      baseInput({
+        salary: 100000,
+        bonus: 50000,
+        rsuValue: 50000,
+        trad401k: 10,
+        defer401kFromBonus: true,
+      }),
+    );
+    // Off: 10% of salary only. On: 10% of salary + bonus. RSU excluded in both.
+    expect(off.trad401kAmt).toBeCloseTo(10000, 2);
+    expect(on.trad401kAmt).toBeCloseTo(15000, 2);
+  });
+
+  it("caps the combined 401(k) elective deferral at the annual limit", () => {
+    // 20% of $300k = $60k, far above the statutory 402(g) limit.
+    const r = calculateAll(baseInput({ salary: 300000, trad401k: 20 }));
+    expect(r.trad401kAmt).toBeCloseTo(EMPLOYEE_401K_LIMIT_2026, 2);
+  });
+
+  it("scales traditional and Roth proportionally when the combined deferral exceeds the limit", () => {
+    // 15% + 5% of $300k = $45k + $15k = $60k raw; scaled to fit, split 3:1.
+    const r = calculateAll(
+      baseInput({ salary: 300000, trad401k: 15, roth401k: 5 }),
+    );
+    expect(r.trad401kAmt + r.roth401kAmt).toBeCloseTo(
+      EMPLOYEE_401K_LIMIT_2026,
+      2,
+    );
+    expect(r.trad401kAmt / r.roth401kAmt).toBeCloseTo(3, 4);
+  });
+
   it("Section 125 (HSA/health/FSA) reduces both FICA and federal wages", () => {
     const without = calculateAll(baseInput({ salary: 100000 }));
     const withHSA = calculateAll(baseInput({ salary: 100000, hsa: 3000 }));
@@ -227,6 +281,15 @@ describe("Take-home identity", () => {
     ).toBeCloseTo(r.inputs.totalGross, 2);
   });
 
+  it("never reports a negative take-home, even when deductions exceed gross", () => {
+    const r = calculateAll(
+      baseInput({ salary: 50000, hsa: 999999, otherPostTax: 999999 }),
+    );
+    expect(r.takeHome).toBe(0);
+    // Section 125 is bounded by gross, so taxable wages never go negative.
+    expect(r.ficaWages).toBeGreaterThanOrEqual(0);
+  });
+
   it("clamps negative inputs to zero", () => {
     const r = calculateAll(
       baseInput({ salary: -10000, bonus: -5000, rsuValue: -1000 }),
@@ -249,6 +312,23 @@ describe("Standard deduction applies per filing status", () => {
       );
       expect(r.fedTaxable).toBeCloseTo(
         80000 - FED_STD_DEDUCTION_2026[status],
+        2,
+      );
+    },
+  );
+});
+
+describe("calculateAll across filing statuses", () => {
+  it.each<FilingStatus>(["single", "mfj", "hoh", "mfs"])(
+    "produces federal tax matching the bracket tax on taxable income for %s",
+    (status) => {
+      const r = calculateAll(
+        baseInput({ salary: 150000, filingStatus: status }),
+      );
+      expect(r.fedTax).toBeGreaterThan(0);
+      expect(r.fedMarginal).toBeGreaterThan(0);
+      expect(r.fedTax).toBeCloseTo(
+        calcBracketTax(r.fedTaxable, FEDERAL_BRACKETS_2026[status]),
         2,
       );
     },
@@ -424,6 +504,22 @@ describe("State handling", () => {
     expect(r.stateTax).toBeCloseTo(expectedStateTaxable * 0.0399, 2);
   });
 
+  it("applies the Massachusetts 4% millionaire surtax above the threshold", () => {
+    // $1.5M salary, no deductions: 5% up to the threshold, 9% above.
+    const r = calculateAll(baseInput({ salary: 1_500_000, stateKey: "ma" }));
+    const expected =
+      MA_SURTAX_THRESHOLD_2026 * 0.05 +
+      (1_500_000 - MA_SURTAX_THRESHOLD_2026) * 0.09;
+    expect(r.stateTax).toBeCloseTo(expected, 2);
+    expect(r.stateMarginal).toBe(0.09);
+  });
+
+  it("charges a flat 5% for Massachusetts income below the surtax threshold", () => {
+    const r = calculateAll(baseInput({ salary: 200000, stateKey: "ma" }));
+    expect(r.stateTax).toBeCloseTo(200000 * 0.05, 2);
+    expect(r.stateMarginal).toBe(0.05);
+  });
+
   it("uses the custom rate when stateKey is 'other'", () => {
     const r = calculateAll(
       baseInput({ salary: 100000, stateKey: "other", customStateRate: 5 }),
@@ -432,13 +528,65 @@ describe("State handling", () => {
     expect(r.stateTax).toBeCloseTo(100000 * 0.05, 2);
   });
 
-  it("uses the state's supp rate (not regular rate) for supp withholding where they differ", () => {
-    // Indiana: regular 3.00%, supp 3.15%.
-    const r = calculateAll(
-      baseInput({ salary: 100000, bonus: 10000, stateKey: "in" }),
+  it("applies California progressive brackets and its bonus supplemental rate", () => {
+    const r = calculateAll(baseInput({ salary: 200000, stateKey: "ca" }));
+    // No pre-tax deductions, so state taxable = salary - CA standard deduction.
+    const taxable = 200000 - STATES.ca.stdDed.single;
+    expect(r.stateTax).toBeCloseTo(
+      calcBracketTax(taxable, STATES.ca.brackets!.single),
+      2,
     );
-    expect(r.stateRate).toBeCloseTo(0.03, 4);
-    expect(r.stateSuppRate).toBeCloseTo(0.0315, 4);
-    expect(r.supp.stateWH).toBeCloseTo(10000 * 0.0315, 2);
+    expect(r.stateMarginal).toBe(0.093);
+    expect(r.stateSuppRate).toBeCloseTo(0.1023, 4);
+  });
+
+  it("applies New York 2026 brackets and its supplemental rate", () => {
+    const r = calculateAll(baseInput({ salary: 120000, stateKey: "ny" }));
+    const taxable = 120000 - STATES.ny.stdDed.single;
+    expect(r.stateTax).toBeCloseTo(
+      calcBracketTax(taxable, STATES.ny.brackets!.single),
+      2,
+    );
+    expect(r.stateSuppRate).toBeCloseTo(0.117, 4);
+  });
+
+  it("falls back to the custom rate for supplemental withholding when state is 'other'", () => {
+    const r = calculateAll(
+      baseInput({
+        salary: 100000,
+        bonus: 10000,
+        stateKey: "other",
+        customStateRate: 7,
+      }),
+    );
+    expect(r.stateSuppRate).toBeCloseTo(0.07, 4);
+    expect(r.supp.stateWH).toBeCloseTo(10000 * 0.07, 2);
+  });
+
+  it("does NOT deduct 401(k)/Section 125 from the state base for PA", () => {
+    // PA flat 3.07% on gross compensation — 401(k) deferrals and HSA are taxed.
+    const r = calculateAll(
+      baseInput({ salary: 100000, trad401k: 10, hsa: 4000, stateKey: "pa" }),
+    );
+    expect(r.stateTax).toBeCloseTo(100000 * 0.0307, 2);
+  });
+
+  it("deducts 401(k)/Section 125 from the state base for conforming states (NC)", () => {
+    const r = calculateAll(
+      baseInput({ salary: 100000, trad401k: 10, hsa: 4000, stateKey: "nc" }),
+    );
+    // NC conforms: base = fedWages ($100k - $10k - $4k = $86k) less the
+    // $12,750 NC standard deduction.
+    expect(r.stateTax).toBeCloseTo((86000 - 12750) * 0.0399, 2);
+  });
+
+  it("uses the state's supp rate (not regular rate) for supp withholding where they differ", () => {
+    // Colorado: regular 4.4%, supplemental 4.63%.
+    const r = calculateAll(
+      baseInput({ salary: 100000, bonus: 10000, stateKey: "co" }),
+    );
+    expect(r.stateRate).toBeCloseTo(0.044, 4);
+    expect(r.stateSuppRate).toBeCloseTo(0.0463, 4);
+    expect(r.supp.stateWH).toBeCloseTo(10000 * 0.0463, 2);
   });
 });
