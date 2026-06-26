@@ -28,6 +28,13 @@ export default function TakeHomeCalculator() {
     setScenarioB((prev) => (prev ? null : { ...state }));
   };
 
+  // Restore the default scenario and drop compare mode. The URL-sync effect
+  // then collapses the query string back to a bare path.
+  const handleReset = () => {
+    setState(DEFAULT_STATE);
+    setScenarioB(null);
+  };
+
   const [linkCopied, setLinkCopied] = useState(false);
   const handleCopyLink = async () => {
     try {
@@ -142,20 +149,35 @@ export default function TakeHomeCalculator() {
               </h1>
             </div>
             <div className="flex flex-col items-end gap-3 max-w-[280px]">
-              <button
-                type="button"
-                onClick={handleCopyLink}
-                aria-label="Copy shareable link to this scenario"
-                className="mono uppercase tracking-[0.15em] text-[10px] px-3 py-2 transition-colors cursor-pointer"
-                style={{
-                  border: "1px solid #1A1812",
-                  color: linkCopied ? "#F5F1E8" : "#1A1812",
-                  background: linkCopied ? "#0E3B2E" : "transparent",
-                  minWidth: "148px",
-                }}
-              >
-                {linkCopied ? "Link copied" : "Copy share link"}
-              </button>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={handleCopyLink}
+                  aria-label="Copy shareable link to this scenario"
+                  className="mono uppercase tracking-[0.15em] text-[10px] px-3 py-2 transition-colors cursor-pointer"
+                  style={{
+                    border: "1px solid #1A1812",
+                    color: linkCopied ? "#F5F1E8" : "#1A1812",
+                    background: linkCopied ? "#0E3B2E" : "transparent",
+                    minWidth: "148px",
+                  }}
+                >
+                  {linkCopied ? "Link copied" : "Copy share link"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleReset}
+                  aria-label="Reset to defaults and clear the shared link"
+                  className="mono uppercase tracking-[0.15em] text-[10px] px-3 py-2 transition-colors cursor-pointer"
+                  style={{
+                    border: "1px solid #1A1812",
+                    color: "#1A1812",
+                    background: "transparent",
+                  }}
+                >
+                  Reset
+                </button>
+              </div>
               <div
                 className="mono text-[11px]"
                 style={{ color: "#4A4638" }}
