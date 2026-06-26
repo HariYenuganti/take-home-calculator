@@ -279,6 +279,15 @@ describe("Take-home identity", () => {
     ).toBeCloseTo(r.inputs.totalGross, 2);
   });
 
+  it("never reports a negative take-home, even when deductions exceed gross", () => {
+    const r = calculateAll(
+      baseInput({ salary: 50000, hsa: 999999, otherPostTax: 999999 }),
+    );
+    expect(r.takeHome).toBe(0);
+    // Section 125 is bounded by gross, so taxable wages never go negative.
+    expect(r.ficaWages).toBeGreaterThanOrEqual(0);
+  });
+
   it("clamps negative inputs to zero", () => {
     const r = calculateAll(
       baseInput({ salary: -10000, bonus: -5000, rsuValue: -1000 }),

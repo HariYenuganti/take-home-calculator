@@ -457,7 +457,12 @@ export function calculateAll(inp: CalcInput): CalcResult {
   const r = Math.max(0, rsuValue || 0);
   const supplemental = b + r;
   const totalGross = s + b + r;
-  const section125 = hsa + healthPremium + fsa + otherPreTax;
+  // Bound pre-tax deductions to [0, gross] so unrealistic inputs can't shield
+  // more than the user earns or drive taxable wages negative.
+  const section125 = Math.min(
+    Math.max(0, hsa + healthPremium + fsa + otherPreTax),
+    totalGross,
+  );
 
   const stateDef = STATES[stateKey];
   const stateBrackets = stateDef.brackets?.[filingStatus];
@@ -532,8 +537,12 @@ export function calculateAll(inp: CalcInput): CalcResult {
 
   const preTaxDeductions = full.trad401kAmt + section125;
   const postTaxDeductions = full.roth401kAmt + (otherPostTax || 0);
-  const takeHome =
-    totalGross - full.totalTax - preTaxDeductions - postTaxDeductions;
+  // Floor at zero: deductions plus tax can exceed gross for nonsensical inputs,
+  // but a negative take-home is never a meaningful figure to display.
+  const takeHome = Math.max(
+    0,
+    totalGross - full.totalTax - preTaxDeductions - postTaxDeductions,
+  );
 
   return {
     inputs: { salary: s, bonus: b, rsuValue: r, supplemental, totalGross },
