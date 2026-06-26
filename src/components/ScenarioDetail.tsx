@@ -441,7 +441,7 @@ export default function ScenarioDetail({
                       />
                       <span
                         style={{
-                          fontFamily: "'IBM Plex Sans', sans-serif",
+                          fontFamily: "var(--ff-sans), sans-serif",
                           minWidth: "3.5ch",
                         }}
                       >
@@ -465,7 +465,7 @@ export default function ScenarioDetail({
                   <span />
                   <span
                     style={{
-                      fontFamily: "'IBM Plex Sans', sans-serif",
+                      fontFamily: "var(--ff-sans), sans-serif",
                     }}
                   >
                     Federal income tax
@@ -577,7 +577,7 @@ function LedgerRow({
     <tr style={{ color: muted ? "var(--c-muted)" : "var(--c-ink)" }}>
       <td
         className={`py-1.5 ${bold ? "font-semibold" : ""}`}
-        style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}
+        style={{ fontFamily: "var(--ff-sans), sans-serif" }}
       >
         {label}
       </td>
@@ -594,7 +594,7 @@ function LineItem({ label, value }: { label: string; value: string }) {
       <span
         style={{
           color: "var(--c-muted-strong)",
-          fontFamily: "'IBM Plex Sans', sans-serif",
+          fontFamily: "var(--ff-sans), sans-serif",
         }}
       >
         {label}
