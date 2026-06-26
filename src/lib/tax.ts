@@ -177,7 +177,7 @@ export const STATES: Record<string, StateDef> = {
     name: "Louisiana",
     rate: 0.03,
     suppRate: 0.03,
-    stdDed: { single: 12500, mfj: 25000, hoh: 12500, mfs: 12500 },
+    stdDed: { single: 12500, mfj: 25000, hoh: 25000, mfs: 12500 },
   },
   other: {
     name: "Other / Progressive state — enter effective rate",
