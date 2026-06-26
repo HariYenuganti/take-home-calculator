@@ -113,6 +113,13 @@ export default function TakeHomeCalculator() {
 
   return (
     <div className="min-h-screen w-full" style={{ background: "#F5F1E8" }}>
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-50 mono text-[11px] px-3 py-2"
+        style={{ background: "#0E3B2E", color: "#F5F1E8" }}
+      >
+        Skip to main content
+      </a>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
         .serif { font-family: 'Instrument Serif', 'Times New Roman', serif; font-weight: 400; letter-spacing: -0.01em; }
@@ -207,7 +214,8 @@ export default function TakeHomeCalculator() {
           </div>
         </header>
 
-        <div
+        <main
+          id="main"
           className={
             compareMode
               ? "space-y-8"
@@ -244,7 +252,7 @@ export default function TakeHomeCalculator() {
               </div>
             </div>
           ) : (
-            <section className="lg:col-span-5">
+            <section className="lg:col-span-5" aria-label="Your inputs">
               <ScenarioInputs
                 state={state}
                 onChange={updateState}
@@ -254,6 +262,7 @@ export default function TakeHomeCalculator() {
           )}
 
           <section
+            aria-label="Results"
             className={
               compareMode ? "space-y-6" : "lg:col-span-7 space-y-6"
             }
@@ -468,7 +477,7 @@ export default function TakeHomeCalculator() {
               — not tax advice.
             </div>
           </section>
-        </div>
+        </main>
 
         <footer
           className="mt-14 pt-6 border-t flex justify-between items-center mono text-[10px] uppercase tracking-[0.2em]"
