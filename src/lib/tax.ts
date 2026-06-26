@@ -317,8 +317,18 @@ export function scenario(inp: ScenarioInput): ScenarioResult {
   // only when the user defers from it.
   const contributable =
     gross - bonus - rsu + (defer401kFromBonus ? bonus : 0);
-  const trad401kAmt = contributable * (trad401k / 100);
-  const roth401kAmt = contributable * (roth401k / 100);
+  // Traditional + Roth elective deferrals share one annual 402(g) limit. If the
+  // requested percentages would exceed it, scale both down proportionally so
+  // the combined deferral never exceeds the statutory cap.
+  const rawTrad = contributable * (trad401k / 100);
+  const rawRoth = contributable * (roth401k / 100);
+  const rawTotal = rawTrad + rawRoth;
+  const deferralScale =
+    rawTotal > EMPLOYEE_401K_LIMIT_2026
+      ? EMPLOYEE_401K_LIMIT_2026 / rawTotal
+      : 1;
+  const trad401kAmt = rawTrad * deferralScale;
+  const roth401kAmt = rawRoth * deferralScale;
   const ficaWages = Math.max(0, gross - section125);
   const fedWages = Math.max(0, gross - section125 - trad401kAmt);
   const ss = Math.min(ficaWages, SS_WAGE_BASE_2026) * SS_RATE;

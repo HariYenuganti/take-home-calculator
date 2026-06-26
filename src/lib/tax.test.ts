@@ -5,6 +5,7 @@ import {
   bracketBreakdown,
   calcBracketTax,
   calculateAll,
+  EMPLOYEE_401K_LIMIT_2026,
   FED_STD_DEDUCTION_2026,
   FED_SUPP_MILLION_CAP,
   FED_SUPP_RATE,
@@ -230,6 +231,24 @@ describe("Pre-tax deductions", () => {
     // Off: 10% of salary only. On: 10% of salary + bonus. RSU excluded in both.
     expect(off.trad401kAmt).toBeCloseTo(10000, 2);
     expect(on.trad401kAmt).toBeCloseTo(15000, 2);
+  });
+
+  it("caps the combined 401(k) elective deferral at the annual limit", () => {
+    // 20% of $300k = $60k, far above the statutory 402(g) limit.
+    const r = calculateAll(baseInput({ salary: 300000, trad401k: 20 }));
+    expect(r.trad401kAmt).toBeCloseTo(EMPLOYEE_401K_LIMIT_2026, 2);
+  });
+
+  it("scales traditional and Roth proportionally when the combined deferral exceeds the limit", () => {
+    // 15% + 5% of $300k = $45k + $15k = $60k raw; scaled to fit, split 3:1.
+    const r = calculateAll(
+      baseInput({ salary: 300000, trad401k: 15, roth401k: 5 }),
+    );
+    expect(r.trad401kAmt + r.roth401kAmt).toBeCloseTo(
+      EMPLOYEE_401K_LIMIT_2026,
+      2,
+    );
+    expect(r.trad401kAmt / r.roth401kAmt).toBeCloseTo(3, 4);
   });
 
   it("Section 125 (HSA/health/FSA) reduces both FICA and federal wages", () => {
