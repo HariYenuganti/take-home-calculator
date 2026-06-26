@@ -25,6 +25,27 @@
   --c-neutral-bg: #ede6d4; /* withholding-matches card */
 }
 
+/* Dark theme — a parchment-on-ink inversion of the same palette. Applied via
+   data-theme on <html>, set before paint by the inline script in layout.tsx
+   (defaults to the OS preference, overridable by the toggle). */
+:root[data-theme="dark"] {
+  --c-bg: #14120d;
+  --c-surface: #201d15;
+  --c-ink: #ece6d6;
+  --c-ink-soft: #cfc8b4;
+  --c-muted: #9a917a;
+  --c-muted-strong: #b6ad94;
+  --c-border: #3a352b;
+  --c-forest: #1f5a47;
+  --c-on-forest: #f5f1e8;
+  --c-gold: #d8a94e;
+  --c-rust: #d2622a;
+  --c-track: #2a2519;
+  --c-warn-bg: #2e1c12;
+  --c-good-bg: #16271d;
+  --c-neutral-bg: #26221a;
+}
+
 body {
   background: var(--c-bg);
   color: var(--c-ink);

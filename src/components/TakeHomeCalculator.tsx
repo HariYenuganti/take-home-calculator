@@ -35,6 +35,28 @@ export default function TakeHomeCalculator() {
     setScenarioB(null);
   };
 
+  // Theme toggle. The <html data-theme> is set pre-paint by the inline script
+  // in layout; here we mirror it into state and flip it on click.
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+  useEffect(() => {
+    // One-time sync from the pre-paint theme on <html> (external DOM source).
+    const current = document.documentElement.dataset.theme;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (current === "dark" || current === "light") setTheme(current);
+  }, []);
+  const toggleTheme = () => {
+    setTheme((prev) => {
+      const next = prev === "dark" ? "light" : "dark";
+      document.documentElement.dataset.theme = next;
+      try {
+        localStorage.setItem("theme", next);
+      } catch {
+        /* localStorage unavailable */
+      }
+      return next;
+    });
+  };
+
   const [linkCopied, setLinkCopied] = useState(false);
   const [failedUrl, setFailedUrl] = useState<string | null>(null);
   const handleCopyLink = async () => {
@@ -185,6 +207,23 @@ export default function TakeHomeCalculator() {
                   }}
                 >
                   Reset
+                </button>
+                <button
+                  type="button"
+                  onClick={toggleTheme}
+                  aria-label={
+                    theme === "dark"
+                      ? "Switch to light theme"
+                      : "Switch to dark theme"
+                  }
+                  className="mono uppercase tracking-[0.15em] text-[10px] px-3 py-2 transition-colors cursor-pointer"
+                  style={{
+                    border: "1px solid var(--c-ink)",
+                    color: "var(--c-ink)",
+                    background: "transparent",
+                  }}
+                >
+                  {theme === "dark" ? "Light" : "Dark"}
                 </button>
               </div>
               {failedUrl && (
