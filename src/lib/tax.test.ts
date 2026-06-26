@@ -317,6 +317,23 @@ describe("Standard deduction applies per filing status", () => {
   );
 });
 
+describe("calculateAll across filing statuses", () => {
+  it.each<FilingStatus>(["single", "mfj", "hoh", "mfs"])(
+    "produces federal tax matching the bracket tax on taxable income for %s",
+    (status) => {
+      const r = calculateAll(
+        baseInput({ salary: 150000, filingStatus: status }),
+      );
+      expect(r.fedTax).toBeGreaterThan(0);
+      expect(r.fedMarginal).toBeGreaterThan(0);
+      expect(r.fedTax).toBeCloseTo(
+        calcBracketTax(r.fedTaxable, FEDERAL_BRACKETS_2026[status]),
+        2,
+      );
+    },
+  );
+});
+
 describe("Supplemental-wage withholding vs. true marginal tax", () => {
   it("produces a negative gap (refund) when flat 22% withholding exceeds the actual marginal bracket", () => {
     // Low salary — actual marginal is 12%, but supp withholds at 22%.
@@ -508,6 +525,19 @@ describe("State handling", () => {
     );
     expect(r.stateRate).toBe(0.05);
     expect(r.stateTax).toBeCloseTo(100000 * 0.05, 2);
+  });
+
+  it("falls back to the custom rate for supplemental withholding when state is 'other'", () => {
+    const r = calculateAll(
+      baseInput({
+        salary: 100000,
+        bonus: 10000,
+        stateKey: "other",
+        customStateRate: 7,
+      }),
+    );
+    expect(r.stateSuppRate).toBeCloseTo(0.07, 4);
+    expect(r.supp.stateWH).toBeCloseTo(10000 * 0.07, 2);
   });
 
   it("does NOT deduct 401(k)/Section 125 from the state base for PA", () => {
