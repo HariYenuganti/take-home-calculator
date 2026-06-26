@@ -307,6 +307,7 @@ export default function ScenarioDetail({
               <div
                 className="flex h-8 overflow-hidden"
                 style={{ background: "#EDE6D4" }}
+                aria-hidden="true"
               >
                 {segs.map((s, i) => (
                   <div
@@ -384,6 +385,7 @@ export default function ScenarioDetail({
               <div
                 className="flex h-10 overflow-hidden"
                 style={{ background: "#EDE6D4" }}
+                aria-hidden="true"
               >
                 {segments.map((s, i) => {
                   const pct = (s.amount / result.fedTaxable) * 100;

@@ -228,7 +228,7 @@ export default function ScenarioInputs({ state, onChange, result }: Props) {
           Your contributions: {fmt(totalContributions)} · Employer match:{" "}
           {fmt(employerMatchAmt)}
           {totalContributions > EMPLOYEE_401K_LIMIT_2026 && (
-            <div style={{ color: "#A84D1E" }} className="mt-1">
+            <div style={{ color: "#A84D1E" }} className="mt-1" role="alert">
               ⚠ Exceeds 2026 employee limit of{" "}
               {fmt(EMPLOYEE_401K_LIMIT_2026)}.
             </div>
