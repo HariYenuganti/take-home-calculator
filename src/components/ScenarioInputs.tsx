@@ -181,7 +181,6 @@ export default function ScenarioInputs({ state, onChange, result }: Props) {
               onChange={(v) => onChange({ customStateRate: v })}
               min={0}
               max={20}
-              step={0.01}
             />
           </div>
         )}
@@ -204,25 +203,19 @@ export default function ScenarioInputs({ state, onChange, result }: Props) {
             value={state.trad401k}
             onChange={(v) => onChange({ trad401k: v })}
             min={0}
-            max={100}
-            step={0.5}
-          />
+            max={100}          />
           <NumberField
             label="Roth 401(k)"
             value={state.roth401k}
             onChange={(v) => onChange({ roth401k: v })}
             min={0}
-            max={100}
-            step={0.5}
-          />
+            max={100}          />
           <NumberField
             label="Employer match"
             value={state.employerMatch}
             onChange={(v) => onChange({ employerMatch: v })}
             min={0}
-            max={100}
-            step={0.5}
-          />
+            max={100}          />
         </div>
         <div
           className="mt-3 mono text-xs numeric"

@@ -8,7 +8,6 @@ interface Props {
   onChange: (value: number) => void;
   min?: number;
   max?: number;
-  step?: number;
 }
 
 // Numeric input that keeps a local string draft while focused, so the field can
@@ -22,7 +21,6 @@ export default function NumberField({
   onChange,
   min,
   max,
-  step,
 }: Props) {
   const [draft, setDraft] = useState<string | null>(null);
   const display = draft ?? (Number.isFinite(value) ? String(value) : "");
@@ -44,13 +42,15 @@ export default function NumberField({
     <label className="block">
       <span className="fld-label">{label}</span>
       <input
-        type="number"
+        // A text input (with a decimal keypad on mobile) rather than
+        // type="number": React's controlled-number reconciliation skips
+        // rewriting the DOM when a clamped value differs from the typed text,
+        // which would leave an out-of-range entry visible after blur. Range
+        // enforcement happens in commit() instead.
+        type="text"
         inputMode="decimal"
         className="fld numeric"
         value={display}
-        min={min}
-        max={max}
-        step={step}
         onFocus={(e) => {
           setDraft(String(value));
           e.target.select();
