@@ -56,7 +56,7 @@ export default function ScenarioDetail({
       )}
 
       {/* Supplemental analysis */}
-      {hasSupplemental &&
+      {hasSupplemental ? (
         (() => {
           const underwithheld = result.supp.gap > 0.5;
           const overwithheld = result.supp.gap < -0.5;
@@ -207,7 +207,28 @@ export default function ScenarioDetail({
               </div>
             </div>
           );
-        })()}
+        })()
+      ) : (
+        <div
+          className="border border-dashed p-6"
+          style={{ borderColor: "#D9D2C1" }}
+        >
+          <div
+            className="mono text-[10px] uppercase tracking-[0.2em]"
+            style={{ color: "#6B6550" }}
+          >
+            April surprise
+          </div>
+          <div
+            className="serif text-xl mt-1"
+            style={{ color: "#4A4638", maxWidth: "460px" }}
+          >
+            Add a cash bonus or RSU value above to see the supplemental
+            withholding analysis — the gap between the flat 22% withheld on
+            bonuses & RSUs and your true marginal tax.
+          </div>
+        </div>
+      )}
 
       {/* By pay period */}
       <div className="border p-5" style={{ borderColor: "#1A1812" }}>
