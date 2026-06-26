@@ -72,6 +72,10 @@ export const FED_SUPP_MILLION_CAP = 1_000_000;
 
 export const EMPLOYEE_401K_LIMIT_2026 = 24500;
 
+// Massachusetts levies a 4% surtax on taxable income above an annually indexed
+// threshold (~$1,107,750 for 2026), on top of the 5% flat rate.
+export const MA_SURTAX_THRESHOLD_2026 = 1_107_750;
+
 export interface StateDef {
   name: string;
   // Flat rate (or null for "other" / progressive states). Ignored when
@@ -166,6 +170,27 @@ export const STATES: Record<string, StateDef> = {
     rate: 0.05,
     suppRate: 0.05,
     stdDed: { single: 0, mfj: 0, hoh: 0, mfs: 0 },
+    // 5% flat plus the 4% millionaire surtax above the threshold. The threshold
+    // is per return — it is not doubled for joint filers — so all four filing
+    // statuses share the same schedule.
+    brackets: {
+      single: [
+        { rate: 0.05, upTo: MA_SURTAX_THRESHOLD_2026 },
+        { rate: 0.09, upTo: Infinity },
+      ],
+      mfj: [
+        { rate: 0.05, upTo: MA_SURTAX_THRESHOLD_2026 },
+        { rate: 0.09, upTo: Infinity },
+      ],
+      hoh: [
+        { rate: 0.05, upTo: MA_SURTAX_THRESHOLD_2026 },
+        { rate: 0.09, upTo: Infinity },
+      ],
+      mfs: [
+        { rate: 0.05, upTo: MA_SURTAX_THRESHOLD_2026 },
+        { rate: 0.09, upTo: Infinity },
+      ],
+    },
   },
   id: {
     name: "Idaho",

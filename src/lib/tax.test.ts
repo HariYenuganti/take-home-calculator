@@ -11,6 +11,7 @@ import {
   FED_SUPP_RATE,
   FED_SUPP_RATE_HIGH,
   FEDERAL_BRACKETS_2026,
+  MA_SURTAX_THRESHOLD_2026,
   marginalRate,
   MEDICARE_RATE,
   SS_RATE,
@@ -483,6 +484,22 @@ describe("State handling", () => {
     // NC: 3.99% on (fedWages - $12,750).
     const expectedStateTaxable = 100000 - 12750;
     expect(r.stateTax).toBeCloseTo(expectedStateTaxable * 0.0399, 2);
+  });
+
+  it("applies the Massachusetts 4% millionaire surtax above the threshold", () => {
+    // $1.5M salary, no deductions: 5% up to the threshold, 9% above.
+    const r = calculateAll(baseInput({ salary: 1_500_000, stateKey: "ma" }));
+    const expected =
+      MA_SURTAX_THRESHOLD_2026 * 0.05 +
+      (1_500_000 - MA_SURTAX_THRESHOLD_2026) * 0.09;
+    expect(r.stateTax).toBeCloseTo(expected, 2);
+    expect(r.stateMarginal).toBe(0.09);
+  });
+
+  it("charges a flat 5% for Massachusetts income below the surtax threshold", () => {
+    const r = calculateAll(baseInput({ salary: 200000, stateKey: "ma" }));
+    expect(r.stateTax).toBeCloseTo(200000 * 0.05, 2);
+    expect(r.stateMarginal).toBe(0.05);
   });
 
   it("uses the custom rate when stateKey is 'other'", () => {
