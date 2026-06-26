@@ -199,6 +199,39 @@ describe("Pre-tax deductions", () => {
     expect(withDeferral.fedTax).toBeLessThan(withoutDeferral.fedTax);
   });
 
+  it("excludes RSU vest value from the 401(k) deferral base", () => {
+    // RSUs are not 401(k)-deferrable. A 10% deferral on $100k salary + $100k
+    // RSU must compute on the $100k salary only ($10k), not on $200k ($20k).
+    const r = calculateAll(
+      baseInput({ salary: 100000, rsuValue: 100000, trad401k: 10 }),
+    );
+    expect(r.trad401kAmt).toBeCloseTo(10000, 2);
+  });
+
+  it("includes the bonus in the 401(k) base only when deferral is enabled", () => {
+    const off = calculateAll(
+      baseInput({
+        salary: 100000,
+        bonus: 50000,
+        rsuValue: 50000,
+        trad401k: 10,
+        defer401kFromBonus: false,
+      }),
+    );
+    const on = calculateAll(
+      baseInput({
+        salary: 100000,
+        bonus: 50000,
+        rsuValue: 50000,
+        trad401k: 10,
+        defer401kFromBonus: true,
+      }),
+    );
+    // Off: 10% of salary only. On: 10% of salary + bonus. RSU excluded in both.
+    expect(off.trad401kAmt).toBeCloseTo(10000, 2);
+    expect(on.trad401kAmt).toBeCloseTo(15000, 2);
+  });
+
   it("Section 125 (HSA/health/FSA) reduces both FICA and federal wages", () => {
     const without = calculateAll(baseInput({ salary: 100000 }));
     const withHSA = calculateAll(baseInput({ salary: 100000, hsa: 3000 }));

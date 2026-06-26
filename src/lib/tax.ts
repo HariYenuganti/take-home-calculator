@@ -260,6 +260,9 @@ export function bracketBreakdown(
 interface ScenarioInput {
   gross: number;
   bonus: number;
+  // RSU vest value included in `gross`. Tracked separately so it can be
+  // excluded from the 401(k) deferral base (RSUs are not deferrable).
+  rsu?: number;
   filingStatus: FilingStatus;
   trad401k: number;
   roth401k: number;
@@ -297,6 +300,7 @@ export function scenario(inp: ScenarioInput): ScenarioResult {
   const {
     gross,
     bonus,
+    rsu = 0,
     filingStatus,
     trad401k,
     roth401k,
@@ -307,7 +311,12 @@ export function scenario(inp: ScenarioInput): ScenarioResult {
     stateStdDed,
   } = inp;
 
-  const contributable = gross - bonus + (defer401kFromBonus ? bonus : 0);
+  // 401(k) elective deferrals come out of regular wages plus (optionally) the
+  // cash bonus. RSU vest value is never 401(k)-deferrable, so subtract both the
+  // bonus and the RSU value from gross to get the base, then add the bonus back
+  // only when the user defers from it.
+  const contributable =
+    gross - bonus - rsu + (defer401kFromBonus ? bonus : 0);
   const trad401kAmt = contributable * (trad401k / 100);
   const roth401kAmt = contributable * (roth401k / 100);
   const ficaWages = Math.max(0, gross - section125);
@@ -430,6 +439,7 @@ export function calculateAll(inp: CalcInput): CalcResult {
   const full = scenario({
     gross: totalGross,
     bonus: b,
+    rsu: r,
     filingStatus,
     trad401k,
     roth401k,
@@ -443,6 +453,7 @@ export function calculateAll(inp: CalcInput): CalcResult {
   const salaryOnly = scenario({
     gross: s,
     bonus: 0,
+    rsu: 0,
     filingStatus,
     trad401k,
     roth401k,
