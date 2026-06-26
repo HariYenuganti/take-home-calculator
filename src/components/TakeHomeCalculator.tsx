@@ -36,14 +36,18 @@ export default function TakeHomeCalculator() {
   };
 
   const [linkCopied, setLinkCopied] = useState(false);
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
   const handleCopyLink = async () => {
+    const url = window.location.href;
     try {
-      await navigator.clipboard.writeText(window.location.href);
+      await navigator.clipboard.writeText(url);
       setLinkCopied(true);
+      setFailedUrl(null);
       window.setTimeout(() => setLinkCopied(false), 1500);
     } catch {
-      // Clipboard API blocked (non-https, sandboxed iframe, etc.). Silent
-      // failure — the user can still copy from the address bar.
+      // Clipboard API blocked (non-https, sandboxed iframe, etc.). Reveal the
+      // URL so the user can select and copy it manually.
+      setFailedUrl(url);
     }
   };
 
@@ -178,6 +182,16 @@ export default function TakeHomeCalculator() {
                   Reset
                 </button>
               </div>
+              {failedUrl && (
+                <input
+                  readOnly
+                  value={failedUrl}
+                  onFocus={(e) => e.target.select()}
+                  aria-label="Shareable link — copy it manually"
+                  className="fld mono"
+                  style={{ width: "260px", fontSize: "11px" }}
+                />
+              )}
               <div
                 className="mono text-[11px]"
                 style={{ color: "#4A4638" }}
