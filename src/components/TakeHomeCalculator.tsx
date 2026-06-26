@@ -62,7 +62,13 @@ export default function TakeHomeCalculator() {
   const [linkCopied, setLinkCopied] = useState(false);
   const [failedUrl, setFailedUrl] = useState<string | null>(null);
   const handleCopyLink = async () => {
-    const url = window.location.href;
+    // Build the link from current state rather than reading location.href,
+    // which the debounced URL sync may not have caught up to yet.
+    const qs = serializeComparison(state, scenarioB);
+    const url =
+      window.location.origin +
+      window.location.pathname +
+      (qs ? `?${qs}` : "");
     try {
       await navigator.clipboard.writeText(url);
       setLinkCopied(true);
@@ -96,11 +102,15 @@ export default function TakeHomeCalculator() {
   // Keep the URL in sync with current state so every change is shareable.
   // Uses replaceState so the back button isn't polluted by each keystroke.
   useEffect(() => {
-    const qs = serializeComparison(state, scenarioB);
-    const next = qs
-      ? `${window.location.pathname}?${qs}`
-      : window.location.pathname;
-    window.history.replaceState(null, "", next);
+    // Debounced so fast typing coalesces into a single history write.
+    const t = window.setTimeout(() => {
+      const qs = serializeComparison(state, scenarioB);
+      const next = qs
+        ? `${window.location.pathname}?${qs}`
+        : window.location.pathname;
+      window.history.replaceState(null, "", next);
+    }, 200);
+    return () => window.clearTimeout(t);
   }, [state, scenarioB]);
 
   const salary = useMemo(() => deriveSalary(state), [state]);
