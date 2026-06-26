@@ -70,7 +70,7 @@ export const FED_SUPP_RATE = 0.22;
 export const FED_SUPP_RATE_HIGH = 0.37;
 export const FED_SUPP_MILLION_CAP = 1_000_000;
 
-export const EMPLOYEE_401K_LIMIT_2026 = 23500;
+export const EMPLOYEE_401K_LIMIT_2026 = 24500;
 
 export interface StateDef {
   name: string;
