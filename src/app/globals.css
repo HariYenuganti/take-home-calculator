@@ -67,6 +67,16 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* Segmented-bar pieces ease to their new width as inputs change. */
+.bar-seg {
+  transition: width 0.35s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bar-seg {
+    transition: none;
+  }
+}
+
 /* Numeric inputs: strip the spinners */
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {

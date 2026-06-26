@@ -319,6 +319,7 @@ export default function ScenarioDetail({
                 {segs.map((s, i) => (
                   <div
                     key={i}
+                    className="bar-seg"
                     title={`${s.label}: ${fmt(s.value)}`}
                     style={{
                       width: `${(s.value / g) * 100}%`,
@@ -417,7 +418,7 @@ export default function ScenarioDetail({
                         background: color,
                         color: dark ? "#F5F1E8" : "#1A1812",
                       }}
-                      className="mono text-[10px] flex items-center justify-center"
+                      className="mono text-[10px] flex items-center justify-center bar-seg"
                     >
                       {labelVisible && shortLabel}
                     </div>
