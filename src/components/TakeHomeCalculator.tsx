@@ -124,6 +124,9 @@ export default function TakeHomeCalculator() {
         input[type=number] { -moz-appearance: textfield; }
         .fld { background: #FFFDF7; border: 1px solid #D9D2C1; padding: 10px 12px; font-size: 14px; width: 100%; transition: border-color 0.15s; font-family: 'IBM Plex Mono', monospace; }
         .fld:focus { outline: none; border-color: #0E3B2E; }
+        .fld:focus-visible { outline: 2px solid #0E3B2E; outline-offset: 1px; }
+        button:focus-visible { outline: 2px solid #C99742; outline-offset: 2px; }
+        .seg button:focus-visible { outline-offset: -2px; }
         .fld-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em; color: #4A4638; margin-bottom: 6px; display: block; font-family: 'IBM Plex Sans', sans-serif; }
         .seg { display: flex; background: #EDE6D4; padding: 3px; }
         .seg button { flex: 1; padding: 7px 10px; font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; background: transparent; border: none; cursor: pointer; color: #6B6550; font-family: 'IBM Plex Sans', sans-serif; }
