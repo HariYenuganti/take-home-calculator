@@ -104,7 +104,7 @@ export default function ScenarioDetail({
                     April surprise
                   </div>
                   <div
-                    className="serif text-5xl numeric mt-1"
+                    className="serif text-6xl md:text-7xl numeric mt-1 leading-none"
                     style={{ color: suppAccent }}
                   >
                     {fmtSigned(result.supp.gap)}
