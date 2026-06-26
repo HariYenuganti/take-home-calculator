@@ -111,6 +111,23 @@ export default function TakeHomeCalculator() {
 
   const hasSupplemental = result.supp.gross > 0;
 
+  // Debounced screen-reader announcement of the headline result, so SR users
+  // hear the take-home / April-surprise change after typing settles rather
+  // than on every keystroke.
+  const [liveMessage, setLiveMessage] = useState("");
+  useEffect(() => {
+    const t = window.setTimeout(() => {
+      let msg = `Annual take-home ${fmt(result.takeHome)}.`;
+      if (hasSupplemental && result.supp.gap > 0.5) {
+        msg += ` Under-withheld on bonus and RSU by ${fmt(result.supp.gap)}; expect to owe at filing.`;
+      } else if (hasSupplemental && result.supp.gap < -0.5) {
+        msg += ` Over-withheld on bonus and RSU by ${fmt(Math.abs(result.supp.gap))}; expect a refund.`;
+      }
+      setLiveMessage(msg);
+    }, 600);
+    return () => window.clearTimeout(t);
+  }, [result, hasSupplemental]);
+
   return (
     <div className="min-h-screen w-full" style={{ background: "#F5F1E8" }}>
       <a
@@ -222,6 +239,9 @@ export default function TakeHomeCalculator() {
               : "grid grid-cols-1 lg:grid-cols-12 gap-8"
           }
         >
+          <div className="sr-only" role="status" aria-live="polite">
+            {liveMessage}
+          </div>
           {compareMode && scenarioB && resultB ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div>
