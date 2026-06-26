@@ -162,3 +162,34 @@ button:focus-visible {
   accent-color: var(--c-forest);
   margin-top: 2px;
 }
+
+/* Print / save-as-PDF: force the light palette on a white page, keep the brand
+   colors (hero, accents) printing, and drop interactive chrome. */
+@media print {
+  :root,
+  :root[data-theme="dark"] {
+    --c-bg: #ffffff;
+    --c-surface: #ffffff;
+    --c-ink: #1a1812;
+    --c-ink-soft: #3a3628;
+    --c-muted: #6b6550;
+    --c-muted-strong: #4a4638;
+    --c-border: #d9d2c1;
+    --c-forest: #0e3b2e;
+    --c-on-forest: #f5f1e8;
+    --c-gold: #c99742;
+    --c-rust: #a84d1e;
+    --c-track: #ede6d4;
+    --c-warn-bg: #fbeee2;
+    --c-good-bg: #e5ede6;
+    --c-neutral-bg: #ede6d4;
+  }
+  body {
+    background: #ffffff;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .no-print {
+    display: none !important;
+  }
+}

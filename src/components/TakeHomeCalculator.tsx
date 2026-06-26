@@ -175,7 +175,7 @@ export default function TakeHomeCalculator() {
               </h1>
             </div>
             <div className="flex flex-col items-end gap-3 max-w-[280px]">
-              <div className="flex gap-2">
+              <div className="flex gap-2 no-print">
                 <button
                   type="button"
                   onClick={handleCopyLink}
@@ -219,6 +219,19 @@ export default function TakeHomeCalculator() {
                   }}
                 >
                   {theme === "dark" ? "Light" : "Dark"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  aria-label="Print or save this scenario as a PDF"
+                  className="mono uppercase tracking-[0.15em] text-[10px] px-3 py-2 transition-colors cursor-pointer"
+                  style={{
+                    border: "1px solid var(--c-ink)",
+                    color: "var(--c-ink)",
+                    background: "transparent",
+                  }}
+                >
+                  PDF
                 </button>
               </div>
               {failedUrl && (
@@ -453,7 +466,7 @@ export default function TakeHomeCalculator() {
                     type="button"
                     onClick={toggleCompare}
                     aria-label="Compare this scenario with another side-by-side"
-                    className="mono uppercase tracking-[0.15em] text-[10px] px-4 py-2 transition-colors cursor-pointer"
+                    className="mono uppercase tracking-[0.15em] text-[10px] px-4 py-2 transition-colors cursor-pointer no-print"
                     style={{
                       border: "1px solid var(--c-gold)",
                       color: "var(--c-ink)",
