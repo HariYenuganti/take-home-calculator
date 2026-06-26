@@ -32,7 +32,7 @@ export default function ScenarioInputs({ state, onChange, result }: Props) {
           <h2 className="serif text-2xl">01 · Base Income</h2>
           <span
             className="mono text-[10px] uppercase tracking-[0.15em]"
-            style={{ color: "#6B6550" }}
+            style={{ color: "var(--c-muted)" }}
           >
             regular wages
           </span>
@@ -88,7 +88,7 @@ export default function ScenarioInputs({ state, onChange, result }: Props) {
         )}
         <div
           className="mt-3 mono text-xs numeric"
-          style={{ color: "#6B6550" }}
+          style={{ color: "var(--c-muted)" }}
         >
           Salary = {fmt(salary)} / year
         </div>
@@ -100,7 +100,7 @@ export default function ScenarioInputs({ state, onChange, result }: Props) {
           <h2 className="serif text-2xl">02 · Bonus & Equity</h2>
           <span
             className="mono text-[10px] uppercase tracking-[0.15em]"
-            style={{ color: "#6B6550" }}
+            style={{ color: "var(--c-muted)" }}
           >
             supplemental wages
           </span>
@@ -134,7 +134,7 @@ export default function ScenarioInputs({ state, onChange, result }: Props) {
         </label>
         <div
           className="mt-3 mono text-xs numeric"
-          style={{ color: "#6B6550" }}
+          style={{ color: "var(--c-muted)" }}
         >
           Total comp = {fmt(salary + state.bonus + state.rsuValue)} ·
           Supplemental = {fmt(state.bonus + state.rsuValue)}
@@ -196,7 +196,7 @@ export default function ScenarioInputs({ state, onChange, result }: Props) {
           <h2 className="serif text-2xl">04 · Retirement</h2>
           <span
             className="mono text-[10px] uppercase tracking-[0.15em]"
-            style={{ color: "#6B6550" }}
+            style={{ color: "var(--c-muted)" }}
           >
             % of contributable wages
           </span>
@@ -223,12 +223,12 @@ export default function ScenarioInputs({ state, onChange, result }: Props) {
         </div>
         <div
           className="mt-3 mono text-xs numeric"
-          style={{ color: "#6B6550" }}
+          style={{ color: "var(--c-muted)" }}
         >
           Your contributions: {fmt(totalContributions)} · Employer match:{" "}
           {fmt(employerMatchAmt)}
           {totalContributions > EMPLOYEE_401K_LIMIT_2026 && (
-            <div style={{ color: "#A84D1E" }} className="mt-1" role="alert">
+            <div style={{ color: "var(--c-rust)" }} className="mt-1" role="alert">
               ⚠ Exceeds 2026 employee limit of{" "}
               {fmt(EMPLOYEE_401K_LIMIT_2026)}.
             </div>
@@ -242,7 +242,7 @@ export default function ScenarioInputs({ state, onChange, result }: Props) {
           <h2 className="serif text-2xl">05 · Pre-tax Deductions</h2>
           <span
             className="mono text-[10px] uppercase tracking-[0.15em]"
-            style={{ color: "#6B6550" }}
+            style={{ color: "var(--c-muted)" }}
           >
             annual $
           </span>

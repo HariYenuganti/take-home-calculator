@@ -129,49 +129,27 @@ export default function TakeHomeCalculator() {
   }, [result, hasSupplemental]);
 
   return (
-    <div className="min-h-screen w-full" style={{ background: "#F5F1E8" }}>
+    <div className="min-h-screen w-full" style={{ background: "var(--c-bg)" }}>
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-50 mono text-[11px] px-3 py-2"
-        style={{ background: "#0E3B2E", color: "#F5F1E8" }}
+        style={{ background: "var(--c-forest)", color: "var(--c-on-forest)" }}
       >
         Skip to main content
       </a>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
-        .serif { font-family: 'Instrument Serif', 'Times New Roman', serif; font-weight: 400; letter-spacing: -0.01em; }
-        .sans  { font-family: 'IBM Plex Sans', system-ui, sans-serif; }
-        .mono  { font-family: 'IBM Plex Mono', 'Menlo', monospace; }
-        .numeric { font-variant-numeric: tabular-nums; }
-        input[type=number]::-webkit-outer-spin-button,
-        input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        input[type=number] { -moz-appearance: textfield; }
-        .fld { background: #FFFDF7; border: 1px solid #D9D2C1; padding: 10px 12px; font-size: 14px; width: 100%; transition: border-color 0.15s; font-family: 'IBM Plex Mono', monospace; }
-        .fld:focus { outline: none; border-color: #0E3B2E; }
-        .fld:focus-visible { outline: 2px solid #0E3B2E; outline-offset: 1px; }
-        button:focus-visible { outline: 2px solid #C99742; outline-offset: 2px; }
-        .seg button:focus-visible { outline-offset: -2px; }
-        .fld-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em; color: #4A4638; margin-bottom: 6px; display: block; font-family: 'IBM Plex Sans', sans-serif; }
-        .seg { display: flex; background: #EDE6D4; padding: 3px; }
-        .seg button { flex: 1; padding: 7px 10px; font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; background: transparent; border: none; cursor: pointer; color: #6B6550; font-family: 'IBM Plex Sans', sans-serif; }
-        .seg button.active { background: #0E3B2E; color: #F5F1E8; }
-        .checkbox-row { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; color: #4A4638; margin-top: 10px; cursor: pointer; line-height: 1.4; }
-        .checkbox-row input { accent-color: #0E3B2E; margin-top: 2px; }
-      `}</style>
-
       <div
         className="max-w-[1280px] mx-auto px-6 md:px-10 py-10 md:py-14 sans"
-        style={{ color: "#1A1812" }}
+        style={{ color: "var(--c-ink)" }}
       >
         <header
           className="border-b pb-6 mb-10"
-          style={{ borderColor: "#1A1812" }}
+          style={{ borderColor: "var(--c-ink)" }}
         >
           <div className="flex items-end justify-between flex-wrap gap-3">
             <div>
               <div
                 className="mono text-[10px] uppercase tracking-[0.2em]"
-                style={{ color: "#0E3B2E" }}
+                style={{ color: "var(--c-forest)" }}
               >
                 Take-Home Ledger · Tax Year 2026 · With Supplemental Wages
               </div>
@@ -187,9 +165,9 @@ export default function TakeHomeCalculator() {
                   aria-label="Copy shareable link to this scenario"
                   className="mono uppercase tracking-[0.15em] text-[10px] px-3 py-2 transition-colors cursor-pointer"
                   style={{
-                    border: "1px solid #1A1812",
-                    color: linkCopied ? "#F5F1E8" : "#1A1812",
-                    background: linkCopied ? "#0E3B2E" : "transparent",
+                    border: "1px solid var(--c-ink)",
+                    color: linkCopied ? "var(--c-on-forest)" : "var(--c-ink)",
+                    background: linkCopied ? "var(--c-forest)" : "transparent",
                     minWidth: "148px",
                   }}
                 >
@@ -201,8 +179,8 @@ export default function TakeHomeCalculator() {
                   aria-label="Reset to defaults and clear the shared link"
                   className="mono uppercase tracking-[0.15em] text-[10px] px-3 py-2 transition-colors cursor-pointer"
                   style={{
-                    border: "1px solid #1A1812",
-                    color: "#1A1812",
+                    border: "1px solid var(--c-ink)",
+                    color: "var(--c-ink)",
                     background: "transparent",
                   }}
                 >
@@ -221,7 +199,7 @@ export default function TakeHomeCalculator() {
               )}
               <div
                 className="mono text-[11px]"
-                style={{ color: "#4A4638" }}
+                style={{ color: "var(--c-muted-strong)" }}
               >
                 2026 brackets per IRS Rev. Proc. 2025-32. SS wage base
                 $184,500. Supplemental withheld at 22% fed (37% over $1M/yr)
@@ -247,7 +225,7 @@ export default function TakeHomeCalculator() {
               <div>
                 <div
                   className="mono text-[10px] uppercase tracking-[0.15em] mb-5 pb-2 border-b"
-                  style={{ color: "#0E3B2E", borderColor: "#0E3B2E" }}
+                  style={{ color: "var(--c-forest)", borderColor: "var(--c-forest)" }}
                 >
                   Scenario A · current
                 </div>
@@ -260,7 +238,7 @@ export default function TakeHomeCalculator() {
               <div>
                 <div
                   className="mono text-[10px] uppercase tracking-[0.15em] mb-5 pb-2 border-b"
-                  style={{ color: "#A84D1E", borderColor: "#A84D1E" }}
+                  style={{ color: "var(--c-rust)", borderColor: "var(--c-rust)" }}
                 >
                   Scenario B · compare
                 </div>
@@ -290,7 +268,7 @@ export default function TakeHomeCalculator() {
             {compareMode && resultB ? (
               <div
                 className="relative overflow-hidden p-8 md:p-10"
-                style={{ background: "#0E3B2E", color: "#F5F1E8" }}
+                style={{ background: "var(--c-forest)", color: "var(--c-on-forest)" }}
               >
                 <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
                   <div className="mono text-[10px] uppercase tracking-[0.2em] opacity-70">
@@ -303,7 +281,7 @@ export default function TakeHomeCalculator() {
                     className="mono uppercase tracking-[0.15em] text-[10px] px-3 py-2 transition-colors cursor-pointer"
                     style={{
                       border: "1px solid rgba(245,241,232,0.35)",
-                      color: "#F5F1E8",
+                      color: "var(--c-on-forest)",
                       background: "transparent",
                     }}
                   >
@@ -335,7 +313,7 @@ export default function TakeHomeCalculator() {
                   <div>
                     <div
                       className="mono text-[10px] uppercase tracking-[0.15em]"
-                      style={{ color: "#C99742" }}
+                      style={{ color: "var(--c-gold)" }}
                     >
                       Scenario B · compare
                     </div>
@@ -362,19 +340,19 @@ export default function TakeHomeCalculator() {
                   >
                     <div
                       className="mono text-[10px] uppercase tracking-[0.15em]"
-                      style={{ color: "#C99742" }}
+                      style={{ color: "var(--c-gold)" }}
                     >
                       Δ B minus A
                     </div>
                     <div
                       className="serif text-[56px] md:text-[64px] leading-[0.95] mt-1 numeric"
-                      style={{ color: "#C99742" }}
+                      style={{ color: "var(--c-gold)" }}
                     >
                       {fmtSigned(resultB.takeHome - result.takeHome)}
                     </div>
                     <div
                       className="mono text-xs mt-3 numeric"
-                      style={{ lineHeight: 1.7, color: "#C99742" }}
+                      style={{ lineHeight: 1.7, color: "var(--c-gold)" }}
                     >
                       Effective {pctDelta(resultB.effectiveRate, result.effectiveRate)}
                       <br />
@@ -388,7 +366,7 @@ export default function TakeHomeCalculator() {
             ) : (
               <div
                 className="relative overflow-hidden p-8 md:p-10"
-                style={{ background: "#0E3B2E", color: "#F5F1E8" }}
+                style={{ background: "var(--c-forest)", color: "var(--c-on-forest)" }}
               >
                 <div className="absolute top-4 right-6 mono text-[10px] uppercase tracking-[0.2em] opacity-60">
                   annual take-home
@@ -443,9 +421,9 @@ export default function TakeHomeCalculator() {
                     aria-label="Compare this scenario with another side-by-side"
                     className="mono uppercase tracking-[0.15em] text-[10px] px-4 py-2 transition-colors cursor-pointer"
                     style={{
-                      border: "1px solid #C99742",
-                      color: "#1A1812",
-                      background: "#C99742",
+                      border: "1px solid var(--c-gold)",
+                      color: "var(--c-ink)",
+                      background: "var(--c-gold)",
                     }}
                   >
                     + Compare with another scenario
@@ -460,13 +438,13 @@ export default function TakeHomeCalculator() {
                   result={result}
                   otherPostTax={state.otherPostTax}
                   label="Scenario A · current"
-                  accent="#0E3B2E"
+                  accent="var(--c-forest)"
                 />
                 <ScenarioDetail
                   result={resultB}
                   otherPostTax={scenarioB.otherPostTax}
                   label="Scenario B · compare"
-                  accent="#A84D1E"
+                  accent="var(--c-rust)"
                 />
               </>
             ) : (
@@ -478,11 +456,11 @@ export default function TakeHomeCalculator() {
 
             <div
               className="text-xs leading-relaxed mono"
-              style={{ color: "#4A4638" }}
+              style={{ color: "var(--c-muted-strong)" }}
             >
               <div
                 className="mb-1 uppercase tracking-[0.15em] text-[10px]"
-                style={{ color: "#0E3B2E" }}
+                style={{ color: "var(--c-forest)" }}
               >
                 Notes & caveats
               </div>
@@ -501,7 +479,7 @@ export default function TakeHomeCalculator() {
 
         <footer
           className="mt-14 pt-6 border-t flex justify-between items-center mono text-[10px] uppercase tracking-[0.2em]"
-          style={{ borderColor: "#1A1812", color: "#6B6550" }}
+          style={{ borderColor: "var(--c-ink)", color: "var(--c-muted)" }}
         >
           <span>Tax Year 2026</span>
           <span>Defaults: single filer · North Carolina</span>

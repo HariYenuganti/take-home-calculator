@@ -11,7 +11,8 @@ import { fmt, fmtPct, fmtSigned } from "@/lib/format";
 
 // Color per federal bracket rate. Warms up as the rate climbs — calm at the
 // bottom of the stair, intense at the top — so heavier brackets visually
-// feel heavier.
+// feel heavier. These are data-viz colors (meaning, not chrome) and stay
+// literal so the bracket-label contrast holds regardless of the page theme.
 const BRACKET_COLORS: Record<number, string> = {
   0.1: "#E8DFC4",
   0.12: "#D6C080",
@@ -40,7 +41,7 @@ export default function ScenarioDetail({
   result,
   otherPostTax,
   label,
-  accent = "#1A1812",
+  accent = "var(--c-ink)",
 }: Props) {
   const hasSupplemental = result.supp.gross > 0;
 
@@ -61,19 +62,19 @@ export default function ScenarioDetail({
           const underwithheld = result.supp.gap > 0.5;
           const overwithheld = result.supp.gap < -0.5;
           const suppAccent = underwithheld
-            ? "#A84D1E"
+            ? "var(--c-rust)"
             : overwithheld
-              ? "#0E3B2E"
-              : "#4A4638";
+              ? "var(--c-forest)"
+              : "var(--c-muted-strong)";
           const bg = underwithheld
-            ? "#FBEEE2"
+            ? "var(--c-warn-bg)"
             : overwithheld
-              ? "#E5EDE6"
-              : "#EDE6D4";
+              ? "var(--c-good-bg)"
+              : "var(--c-neutral-bg)";
           return (
             <div
               className="border p-6"
-              style={{ borderColor: "#1A1812", background: bg }}
+              style={{ borderColor: "var(--c-ink)", background: bg }}
             >
               <div className="flex items-baseline justify-between mb-4 flex-wrap gap-3">
                 <div>
@@ -98,7 +99,7 @@ export default function ScenarioDetail({
                 <div className="text-right">
                   <div
                     className="mono text-[10px] uppercase tracking-[0.15em]"
-                    style={{ color: "#6B6550" }}
+                    style={{ color: "var(--c-muted)" }}
                   >
                     April surprise
                   </div>
@@ -114,11 +115,14 @@ export default function ScenarioDetail({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div
                   className="border p-4"
-                  style={{ borderColor: "#D9D2C1", background: "#FFFDF7" }}
+                  style={{
+                    borderColor: "var(--c-border)",
+                    background: "var(--c-surface)",
+                  }}
                 >
                   <div
                     className="mono text-[10px] uppercase tracking-[0.15em]"
-                    style={{ color: "#6B6550" }}
+                    style={{ color: "var(--c-muted)" }}
                   >
                     Your paycheck withholds
                   </div>
@@ -143,11 +147,14 @@ export default function ScenarioDetail({
 
                 <div
                   className="border p-4"
-                  style={{ borderColor: "#D9D2C1", background: "#FFFDF7" }}
+                  style={{
+                    borderColor: "var(--c-border)",
+                    background: "var(--c-surface)",
+                  }}
                 >
                   <div
                     className="mono text-[10px] uppercase tracking-[0.15em]"
-                    style={{ color: "#6B6550" }}
+                    style={{ color: "var(--c-muted)" }}
                   >
                     You actually owe on {fmt(result.supp.gross)} supplemental
                   </div>
@@ -156,7 +163,7 @@ export default function ScenarioDetail({
                   </div>
                   <div
                     className="text-xs mt-3"
-                    style={{ color: "#4A4638", lineHeight: 1.5 }}
+                    style={{ color: "var(--c-muted-strong)", lineHeight: 1.5 }}
                   >
                     Your marginal federal rate is{" "}
                     <span className="mono">{fmtPct(result.fedMarginal)}</span>,
@@ -169,7 +176,7 @@ export default function ScenarioDetail({
 
               <div
                 className="mt-4 text-xs leading-relaxed"
-                style={{ color: "#3A3628" }}
+                style={{ color: "var(--c-ink-soft)" }}
               >
                 {underwithheld && (
                   <span>
@@ -211,17 +218,17 @@ export default function ScenarioDetail({
       ) : (
         <div
           className="border border-dashed p-6"
-          style={{ borderColor: "#D9D2C1" }}
+          style={{ borderColor: "var(--c-border)" }}
         >
           <div
             className="mono text-[10px] uppercase tracking-[0.2em]"
-            style={{ color: "#6B6550" }}
+            style={{ color: "var(--c-muted)" }}
           >
             April surprise
           </div>
           <div
             className="serif text-xl mt-1"
-            style={{ color: "#4A4638", maxWidth: "460px" }}
+            style={{ color: "var(--c-muted-strong)", maxWidth: "460px" }}
           >
             Add a cash bonus or RSU value above to see the supplemental
             withholding analysis — the gap between the flat 22% withheld on
@@ -231,29 +238,29 @@ export default function ScenarioDetail({
       )}
 
       {/* By pay period */}
-      <div className="border p-5" style={{ borderColor: "#1A1812" }}>
+      <div className="border p-5" style={{ borderColor: "var(--c-ink)" }}>
         <div className="flex items-baseline justify-between mb-3">
           <h2 className="serif text-xl">By pay period</h2>
           <div
             className="mono text-[10px] uppercase tracking-[0.15em]"
-            style={{ color: "#6B6550" }}
+            style={{ color: "var(--c-muted)" }}
           >
             annual take-home ÷ frequency
           </div>
         </div>
         <div
           className="grid grid-cols-2 gap-y-4 sm:grid-cols-4 sm:gap-y-0 sm:divide-x"
-          style={{ borderColor: "#D9D2C1" }}
+          style={{ borderColor: "var(--c-border)" }}
         >
           {PERIODS.map((p) => (
             <div
               key={p.label}
               className="sm:px-3 sm:first:pl-0"
-              style={{ borderColor: "#D9D2C1" }}
+              style={{ borderColor: "var(--c-border)" }}
             >
               <div
                 className="mono text-[10px] uppercase tracking-[0.15em]"
-                style={{ color: "#6B6550" }}
+                style={{ color: "var(--c-muted)" }}
               >
                 {p.label}
               </div>
@@ -266,7 +273,7 @@ export default function ScenarioDetail({
         {hasSupplemental && (
           <div
             className="mono text-[10px] mt-3"
-            style={{ color: "#6B6550" }}
+            style={{ color: "var(--c-muted)" }}
           >
             * Pay-period views assume even distribution across the year.
             Actual bonus/RSU paychecks will be larger and lumpy.
@@ -275,7 +282,7 @@ export default function ScenarioDetail({
       </div>
 
       {/* Visual breakdown */}
-      <div className="border p-5" style={{ borderColor: "#1A1812" }}>
+      <div className="border p-5" style={{ borderColor: "var(--c-ink)" }}>
         <h2 className="serif text-xl mb-4">
           Where each dollar of total comp goes
         </h2>
@@ -306,7 +313,7 @@ export default function ScenarioDetail({
             <>
               <div
                 className="flex h-8 overflow-hidden"
-                style={{ background: "#EDE6D4" }}
+                style={{ background: "var(--c-track)" }}
                 aria-hidden="true"
               >
                 {segs.map((s, i) => (
@@ -335,7 +342,7 @@ export default function ScenarioDetail({
                     </div>
                     <span className="mono numeric">
                       {fmt(s.value)}{" "}
-                      <span style={{ color: "#6B6550" }}>
+                      <span style={{ color: "var(--c-muted)" }}>
                         ({((s.value / g) * 100).toFixed(1)}%)
                       </span>
                     </span>
@@ -359,13 +366,13 @@ export default function ScenarioDetail({
           return (
             <div
               className="border p-5"
-              style={{ borderColor: "#1A1812" }}
+              style={{ borderColor: "var(--c-ink)" }}
             >
               <div className="flex items-baseline justify-between mb-1 flex-wrap gap-3">
                 <h2 className="serif text-xl">Federal bracket breakdown</h2>
                 <div
                   className="mono text-[10px] uppercase tracking-[0.15em]"
-                  style={{ color: "#6B6550" }}
+                  style={{ color: "var(--c-muted)" }}
                 >
                   marginal {fmtPct(result.fedMarginal)} · effective on
                   taxable {fmtPct(effective)}
@@ -373,7 +380,7 @@ export default function ScenarioDetail({
               </div>
               <div
                 className="text-xs mb-4"
-                style={{ color: "#6B6550", lineHeight: 1.6 }}
+                style={{ color: "var(--c-muted)", lineHeight: 1.6 }}
               >
                 Each dollar of your {fmt(result.fedTaxable)} federal taxable
                 income is taxed at the bracket it lands in — so only your{" "}
@@ -384,7 +391,7 @@ export default function ScenarioDetail({
               {/* Segmented bar */}
               <div
                 className="flex h-10 overflow-hidden"
-                style={{ background: "#EDE6D4" }}
+                style={{ background: "var(--c-track)" }}
                 aria-hidden="true"
               >
                 {segments.map((s, i) => {
@@ -398,6 +405,8 @@ export default function ScenarioDetail({
                   // The 0.22 bracket's gold (#C99742) is too light to carry
                   // cream text (2.3:1), so only brackets above it get the
                   // light-on-dark treatment; 0.22 and below use ink text.
+                  // These are relative to the fixed bracket colors, so they
+                  // stay literal across themes.
                   const dark = s.rate > 0.22;
                   return (
                     <div
@@ -439,7 +448,7 @@ export default function ScenarioDetail({
                         {fmtPct(s.rate)}
                       </span>
                     </div>
-                    <div style={{ color: "#6B6550" }}>
+                    <div style={{ color: "var(--c-muted)" }}>
                       {fmt(s.from)} –{" "}
                       {s.to === Infinity ? "∞" : fmt(s.to)}
                       <span className="ml-2">
@@ -451,7 +460,7 @@ export default function ScenarioDetail({
                 ))}
                 <div
                   className="grid grid-cols-[auto_1fr_auto] gap-x-4 pt-2 mt-2 border-t font-semibold"
-                  style={{ borderColor: "#1A1812" }}
+                  style={{ borderColor: "var(--c-ink)" }}
                 >
                   <span />
                   <span
@@ -469,7 +478,7 @@ export default function ScenarioDetail({
         })()}
 
       {/* Line-item ledger */}
-      <div className="border p-5" style={{ borderColor: "#1A1812" }}>
+      <div className="border p-5" style={{ borderColor: "var(--c-ink)" }}>
         <h2 className="serif text-xl mb-3">Line-item ledger</h2>
         <table className="w-full text-sm numeric mono">
           <tbody>
@@ -537,7 +546,7 @@ export default function ScenarioDetail({
               <td colSpan={2}>
                 <div
                   className="border-t my-1"
-                  style={{ borderColor: "#1A1812" }}
+                  style={{ borderColor: "var(--c-ink)" }}
                 />
               </td>
             </tr>
@@ -565,7 +574,7 @@ function LedgerRow({
   muted?: boolean;
 }) {
   return (
-    <tr style={{ color: muted ? "#6B6550" : "#1A1812" }}>
+    <tr style={{ color: muted ? "var(--c-muted)" : "var(--c-ink)" }}>
       <td
         className={`py-1.5 ${bold ? "font-semibold" : ""}`}
         style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}
@@ -583,7 +592,10 @@ function LineItem({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between">
       <span
-        style={{ color: "#4A4638", fontFamily: "'IBM Plex Sans', sans-serif" }}
+        style={{
+          color: "var(--c-muted-strong)",
+          fontFamily: "'IBM Plex Sans', sans-serif",
+        }}
       >
         {label}
       </span>

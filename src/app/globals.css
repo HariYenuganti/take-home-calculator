@@ -1,26 +1,134 @@
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
+/* ---------------------------------------------------------------------------
+   Palette tokens. Every UI color references one of these so the whole theme
+   can be retargeted (e.g. dark mode) from one place. Data-visualization colors
+   (the bracket stack, allocation bar) intentionally stay literal in the
+   components — they encode meaning, not chrome.
+   --------------------------------------------------------------------------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --c-bg: #f5f1e8; /* parchment page */
+  --c-surface: #fffdf7; /* cards / inputs */
+  --c-ink: #1a1812; /* primary text + hairlines */
+  --c-ink-soft: #3a3628;
+  --c-muted: #6b6550;
+  --c-muted-strong: #4a4638;
+  --c-border: #d9d2c1;
+  --c-forest: #0e3b2e; /* hero panel + primary accent */
+  --c-on-forest: #f5f1e8; /* text on the forest panel */
+  --c-gold: #c99742;
+  --c-rust: #a84d1e;
+  --c-track: #ede6d4; /* segmented control + bar tracks */
+  --c-warn-bg: #fbeee2; /* under-withheld card */
+  --c-good-bg: #e5ede6; /* over-withheld card */
+  --c-neutral-bg: #ede6d4; /* withholding-matches card */
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--c-bg);
+  color: var(--c-ink);
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
+}
+
+/* Type families */
+.serif {
+  font-family: "Instrument Serif", "Times New Roman", serif;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+.sans {
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
+}
+.mono {
+  font-family: "IBM Plex Mono", "Menlo", monospace;
+}
+.numeric {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Numeric inputs: strip the spinners */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Form fields */
+.fld {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  padding: 10px 12px;
+  font-size: 14px;
+  width: 100%;
+  color: var(--c-ink);
+  transition: border-color 0.15s;
+  font-family: "IBM Plex Mono", monospace;
+}
+.fld:focus {
+  outline: none;
+  border-color: var(--c-forest);
+}
+.fld:focus-visible {
+  outline: 2px solid var(--c-forest);
+  outline-offset: 1px;
+}
+button:focus-visible {
+  outline: 2px solid var(--c-gold);
+  outline-offset: 2px;
+}
+.seg button:focus-visible {
+  outline-offset: -2px;
+}
+.fld-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--c-muted-strong);
+  margin-bottom: 6px;
+  display: block;
+  font-family: "IBM Plex Sans", sans-serif;
+}
+
+/* Segmented control */
+.seg {
+  display: flex;
+  background: var(--c-track);
+  padding: 3px;
+}
+.seg button {
+  flex: 1;
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--c-muted);
+  font-family: "IBM Plex Sans", sans-serif;
+}
+.seg button.active {
+  background: var(--c-forest);
+  color: var(--c-on-forest);
+}
+
+/* Checkbox row */
+.checkbox-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--c-muted-strong);
+  margin-top: 10px;
+  cursor: pointer;
+  line-height: 1.4;
+}
+.checkbox-row input {
+  accent-color: var(--c-forest);
+  margin-top: 2px;
 }
