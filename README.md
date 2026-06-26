@@ -49,9 +49,10 @@ page — alongside the standard federal / state / FICA breakdown.
   but *not* FICA wages. HSA / health / FSA (Section 125) reduce both. Social
   Security caps at the $184,500 wage base. 0.9% additional Medicare kicks in
   past the per-filing-status threshold. None of this is glossed over.
-- **State income tax** for ~15 common flat-rate states, with a custom-rate
-  escape hatch. Progressive-bracket infrastructure is in place for CA/NY
-  (data pending verification).
+- **State income tax** for ~15 states — flat-rate states plus full
+  progressive brackets for **California** (incl. the 1% mental-health surcharge
+  over $1M) and **New York** (2026 state rates) — with a no-tax option and a
+  custom-rate escape hatch for the rest.
 
 <details>
 <summary><strong>Full interface preview</strong></summary>

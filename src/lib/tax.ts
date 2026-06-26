@@ -204,6 +204,125 @@ export const STATES: Record<string, StateDef> = {
     suppRate: 0.03,
     stdDed: { single: 12500, mfj: 25000, hoh: 25000, mfs: 12500 },
   },
+  ca: {
+    name: "California",
+    rate: null,
+    // CA FTB withholds 10.23% on bonuses/stock (RSUs), 6.6% other supplemental.
+    suppRate: 0.1023,
+    stdDed: { single: 5706, mfj: 11412, hoh: 11412, mfs: 5706 },
+    // Latest published FTB rate schedules (2025 tax year). The FTB
+    // inflation-indexes the thresholds annually and had not released the 2026
+    // Form 540 schedules as of mid-2026; the rate structure is stable. The 1%
+    // Mental Health Services surcharge on income over $1M is folded in as the
+    // 13.3% top band. Refresh the thresholds when FTB publishes 2026.
+    brackets: {
+      single: [
+        { rate: 0.01, upTo: 11079 },
+        { rate: 0.02, upTo: 26264 },
+        { rate: 0.04, upTo: 41452 },
+        { rate: 0.06, upTo: 57542 },
+        { rate: 0.08, upTo: 72724 },
+        { rate: 0.093, upTo: 371479 },
+        { rate: 0.103, upTo: 445771 },
+        { rate: 0.113, upTo: 742953 },
+        { rate: 0.123, upTo: 1000000 },
+        { rate: 0.133, upTo: Infinity },
+      ],
+      mfj: [
+        { rate: 0.01, upTo: 22158 },
+        { rate: 0.02, upTo: 52528 },
+        { rate: 0.04, upTo: 82904 },
+        { rate: 0.06, upTo: 115084 },
+        { rate: 0.08, upTo: 145448 },
+        { rate: 0.093, upTo: 742958 },
+        { rate: 0.103, upTo: 891542 },
+        { rate: 0.113, upTo: 1000000 },
+        { rate: 0.123, upTo: 1485906 },
+        { rate: 0.133, upTo: Infinity },
+      ],
+      hoh: [
+        { rate: 0.01, upTo: 22173 },
+        { rate: 0.02, upTo: 52530 },
+        { rate: 0.04, upTo: 67716 },
+        { rate: 0.06, upTo: 83805 },
+        { rate: 0.08, upTo: 98990 },
+        { rate: 0.093, upTo: 505208 },
+        { rate: 0.103, upTo: 606251 },
+        { rate: 0.113, upTo: 1000000 },
+        { rate: 0.123, upTo: 1010417 },
+        { rate: 0.133, upTo: Infinity },
+      ],
+      mfs: [
+        { rate: 0.01, upTo: 11079 },
+        { rate: 0.02, upTo: 26264 },
+        { rate: 0.04, upTo: 41452 },
+        { rate: 0.06, upTo: 57542 },
+        { rate: 0.08, upTo: 72724 },
+        { rate: 0.093, upTo: 371479 },
+        { rate: 0.103, upTo: 445771 },
+        { rate: 0.113, upTo: 742953 },
+        { rate: 0.123, upTo: 1000000 },
+        { rate: 0.133, upTo: Infinity },
+      ],
+    },
+  },
+  ny: {
+    name: "New York (state only)",
+    rate: null,
+    // NY DTF 2026 supplemental withholding rate (Pub. NYS-50-T-NYS, rev. 1/26).
+    suppRate: 0.117,
+    stdDed: { single: 8000, mfj: 16050, hoh: 11200, mfs: 8000 },
+    // 2026 NY State schedules — Ch. 59 of the Laws of 2025 cut the bottom five
+    // rates (effective Jan 1, 2026); top three brackets run through 2032. STATE
+    // ONLY: NYC / Yonkers resident taxes and the high-earner benefit-recapture
+    // are not modeled, so very high incomes are slightly understated.
+    brackets: {
+      single: [
+        { rate: 0.039, upTo: 8500 },
+        { rate: 0.044, upTo: 11700 },
+        { rate: 0.0515, upTo: 13900 },
+        { rate: 0.054, upTo: 80650 },
+        { rate: 0.059, upTo: 215400 },
+        { rate: 0.0685, upTo: 1077550 },
+        { rate: 0.0965, upTo: 5000000 },
+        { rate: 0.103, upTo: 25000000 },
+        { rate: 0.109, upTo: Infinity },
+      ],
+      mfj: [
+        { rate: 0.039, upTo: 17150 },
+        { rate: 0.044, upTo: 23600 },
+        { rate: 0.0515, upTo: 27900 },
+        { rate: 0.054, upTo: 161550 },
+        { rate: 0.059, upTo: 323200 },
+        { rate: 0.0685, upTo: 2155350 },
+        { rate: 0.0965, upTo: 5000000 },
+        { rate: 0.103, upTo: 25000000 },
+        { rate: 0.109, upTo: Infinity },
+      ],
+      hoh: [
+        { rate: 0.039, upTo: 12800 },
+        { rate: 0.044, upTo: 17650 },
+        { rate: 0.0515, upTo: 20900 },
+        { rate: 0.054, upTo: 107650 },
+        { rate: 0.059, upTo: 269300 },
+        { rate: 0.0685, upTo: 1616450 },
+        { rate: 0.0965, upTo: 5000000 },
+        { rate: 0.103, upTo: 25000000 },
+        { rate: 0.109, upTo: Infinity },
+      ],
+      mfs: [
+        { rate: 0.039, upTo: 8500 },
+        { rate: 0.044, upTo: 11700 },
+        { rate: 0.0515, upTo: 13900 },
+        { rate: 0.054, upTo: 80650 },
+        { rate: 0.059, upTo: 215400 },
+        { rate: 0.0685, upTo: 1077550 },
+        { rate: 0.0965, upTo: 5000000 },
+        { rate: 0.103, upTo: 25000000 },
+        { rate: 0.109, upTo: Infinity },
+      ],
+    },
+  },
   other: {
     name: "Other / Progressive state — enter effective rate",
     rate: null,

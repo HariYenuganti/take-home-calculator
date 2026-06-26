@@ -16,6 +16,7 @@ import {
   MEDICARE_RATE,
   SS_RATE,
   SS_WAGE_BASE_2026,
+  STATES,
   scenario,
   type CalcInput,
   type FilingStatus,
@@ -525,6 +526,28 @@ describe("State handling", () => {
     );
     expect(r.stateRate).toBe(0.05);
     expect(r.stateTax).toBeCloseTo(100000 * 0.05, 2);
+  });
+
+  it("applies California progressive brackets and its bonus supplemental rate", () => {
+    const r = calculateAll(baseInput({ salary: 200000, stateKey: "ca" }));
+    // No pre-tax deductions, so state taxable = salary - CA standard deduction.
+    const taxable = 200000 - STATES.ca.stdDed.single;
+    expect(r.stateTax).toBeCloseTo(
+      calcBracketTax(taxable, STATES.ca.brackets!.single),
+      2,
+    );
+    expect(r.stateMarginal).toBe(0.093);
+    expect(r.stateSuppRate).toBeCloseTo(0.1023, 4);
+  });
+
+  it("applies New York 2026 brackets and its supplemental rate", () => {
+    const r = calculateAll(baseInput({ salary: 120000, stateKey: "ny" }));
+    const taxable = 120000 - STATES.ny.stdDed.single;
+    expect(r.stateTax).toBeCloseTo(
+      calcBracketTax(taxable, STATES.ny.brackets!.single),
+      2,
+    );
+    expect(r.stateSuppRate).toBeCloseTo(0.117, 4);
   });
 
   it("falls back to the custom rate for supplemental withholding when state is 'other'", () => {
