@@ -77,12 +77,12 @@ export default function ScenarioDetail({
             >
               <div className="flex items-baseline justify-between mb-4 flex-wrap gap-3">
                 <div>
-                  <div
+                  <h2
                     className="mono text-[10px] uppercase tracking-[0.2em]"
                     style={{ color: suppAccent }}
                   >
                     Supplemental Pay · Withholding vs. Reality
-                  </div>
+                  </h2>
                   <div
                     className="serif text-2xl md:text-[28px] mt-1 leading-tight"
                     style={{ maxWidth: "420px" }}
@@ -233,7 +233,7 @@ export default function ScenarioDetail({
       {/* By pay period */}
       <div className="border p-5" style={{ borderColor: "#1A1812" }}>
         <div className="flex items-baseline justify-between mb-3">
-          <div className="serif text-xl">By pay period</div>
+          <h2 className="serif text-xl">By pay period</h2>
           <div
             className="mono text-[10px] uppercase tracking-[0.15em]"
             style={{ color: "#6B6550" }}
@@ -276,9 +276,9 @@ export default function ScenarioDetail({
 
       {/* Visual breakdown */}
       <div className="border p-5" style={{ borderColor: "#1A1812" }}>
-        <div className="serif text-xl mb-4">
+        <h2 className="serif text-xl mb-4">
           Where each dollar of total comp goes
-        </div>
+        </h2>
         {(() => {
           const g = Math.max(result.inputs.totalGross, 1);
           const segs = [
@@ -361,7 +361,7 @@ export default function ScenarioDetail({
               style={{ borderColor: "#1A1812" }}
             >
               <div className="flex items-baseline justify-between mb-1 flex-wrap gap-3">
-                <div className="serif text-xl">Federal bracket breakdown</div>
+                <h2 className="serif text-xl">Federal bracket breakdown</h2>
                 <div
                   className="mono text-[10px] uppercase tracking-[0.15em]"
                   style={{ color: "#6B6550" }}
@@ -468,7 +468,7 @@ export default function ScenarioDetail({
 
       {/* Line-item ledger */}
       <div className="border p-5" style={{ borderColor: "#1A1812" }}>
-        <div className="serif text-xl mb-3">Line-item ledger</div>
+        <h2 className="serif text-xl mb-3">Line-item ledger</h2>
         <table className="w-full text-sm numeric mono">
           <tbody>
             <LedgerRow
