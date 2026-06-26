@@ -29,4 +29,30 @@ describe("<TakeHomeCalculator />", () => {
 
     expect(takeHome.textContent).not.toBe(before);
   });
+
+  it("hydrates inputs from the URL on mount", () => {
+    window.history.replaceState({}, "", "/?salary=300000");
+    render(<TakeHomeCalculator />);
+    const salary = screen.getByLabelText(
+      /annual salary/i,
+    ) as HTMLInputElement;
+    expect(salary.value).toBe("300000");
+    window.history.replaceState({}, "", "/");
+  });
+
+  it("enters compare mode and seeds scenario B from scenario A", async () => {
+    const user = userEvent.setup();
+    render(<TakeHomeCalculator />);
+    expect(screen.queryByTestId("take-home-b")).not.toBeInTheDocument();
+    await user.click(
+      screen.getByRole("button", { name: /compare this scenario/i }),
+    );
+    const a = screen.getByTestId("take-home").textContent;
+    expect(screen.getByTestId("take-home-b").textContent).toBe(a);
+  });
+
+  it("shows the under-withheld April-surprise verdict for the default scenario", () => {
+    render(<TakeHomeCalculator />);
+    expect(screen.getByText(/Under-withheld/i)).toBeInTheDocument();
+  });
 });
