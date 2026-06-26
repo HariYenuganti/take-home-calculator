@@ -187,9 +187,11 @@ export default function ScenarioDetail({
                     <span className="mono">{fmtPct(result.fedMarginal)}</span>.
                     You&apos;ll likely owe around{" "}
                     <span className="mono">{fmt(result.supp.gap)}</span> at
-                    filing. Fixes: increase W-4 extra withholding (line 4c),
-                    make a Q4 estimated payment, or sell additional RSU shares
-                    at vest to cover the gap.
+                    filing. To cover it: add{" "}
+                    <span className="mono">{fmt(result.supp.gap / 26)}</span> per
+                    biweekly paycheck on W-4 line 4c, or make a{" "}
+                    <span className="mono">{fmt(result.supp.gap)}</span>{" "}
+                    estimated payment by Jan 15, 2027.
                   </span>
                 )}
                 {overwithheld && (
