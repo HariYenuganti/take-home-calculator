@@ -151,8 +151,8 @@ export const STATES: Record<string, StateDef> = {
   },
   ky: {
     name: "Kentucky",
-    rate: 0.04,
-    suppRate: 0.04,
+    rate: 0.035,
+    suppRate: 0.035,
     stdDed: { single: 3460, mfj: 3460, hoh: 3460, mfs: 3460 },
   },
   ga: {
