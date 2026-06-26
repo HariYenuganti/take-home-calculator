@@ -55,6 +55,14 @@ export const SERIALIZATION_BASELINE: CalcState = {
 // serialization.
 export const DEFAULT_STATE: CalcState = { ...SERIALIZATION_BASELINE };
 
+// Annual salary derived from the pay-type fields. Centralizes the
+// annual-vs-hourly rule used by both the inputs readout and the calc.
+export function deriveSalary(state: CalcState): number {
+  return state.payType === "annual"
+    ? state.annualSalary
+    : state.hourlyRate * state.hoursPerWeek * state.weeksPerYear;
+}
+
 // Short-ish, human-readable URL keys. Stable; don't rename casually — shared
 // links out in the wild will break.
 const KEYS = {

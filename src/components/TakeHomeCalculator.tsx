@@ -7,6 +7,7 @@ import {
   type CalcState,
   DEFAULT_STATE,
   SERIALIZATION_BASELINE,
+  deriveSalary,
   parseComparison,
   serializeComparison,
 } from "@/lib/urlState";
@@ -102,19 +103,7 @@ export default function TakeHomeCalculator() {
     window.history.replaceState(null, "", next);
   }, [state, scenarioB]);
 
-  const salary = useMemo(
-    () =>
-      state.payType === "annual"
-        ? state.annualSalary
-        : state.hourlyRate * state.hoursPerWeek * state.weeksPerYear,
-    [
-      state.payType,
-      state.annualSalary,
-      state.hourlyRate,
-      state.hoursPerWeek,
-      state.weeksPerYear,
-    ],
-  );
+  const salary = useMemo(() => deriveSalary(state), [state]);
 
   const result = useMemo(
     () => calculateAll({ ...state, salary }),
@@ -123,13 +112,7 @@ export default function TakeHomeCalculator() {
 
   const resultB = useMemo(() => {
     if (!scenarioB) return null;
-    const salaryB =
-      scenarioB.payType === "annual"
-        ? scenarioB.annualSalary
-        : scenarioB.hourlyRate *
-          scenarioB.hoursPerWeek *
-          scenarioB.weeksPerYear;
-    return calculateAll({ ...scenarioB, salary: salaryB });
+    return calculateAll({ ...scenarioB, salary: deriveSalary(scenarioB) });
   }, [scenarioB]);
 
   const hasSupplemental = result.supp.gross > 0;

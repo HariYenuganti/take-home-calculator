@@ -7,7 +7,7 @@ import {
   type FilingStatus,
 } from "@/lib/tax";
 import { fmt } from "@/lib/format";
-import { type CalcState } from "@/lib/urlState";
+import { type CalcState, deriveSalary } from "@/lib/urlState";
 import NumberField from "./NumberField";
 
 interface Props {
@@ -17,10 +17,7 @@ interface Props {
 }
 
 export default function ScenarioInputs({ state, onChange, result }: Props) {
-  const salary =
-    state.payType === "annual"
-      ? state.annualSalary
-      : state.hourlyRate * state.hoursPerWeek * state.weeksPerYear;
+  const salary = deriveSalary(state);
   const totalContributions = result.trad401kAmt + result.roth401kAmt;
   const employerMatchAmt = salary * (state.employerMatch / 100);
 
