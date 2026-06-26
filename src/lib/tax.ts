@@ -157,9 +157,9 @@ export const STATES: Record<string, StateDef> = {
   },
   ga: {
     name: "Georgia",
-    rate: 0.0519,
-    suppRate: 0.0519,
-    stdDed: { single: 12000, mfj: 24000, hoh: 12000, mfs: 12000 },
+    rate: 0.0499,
+    suppRate: 0.0499,
+    stdDed: { single: 15000, mfj: 30000, hoh: 15000, mfs: 15000 },
   },
   ma: {
     name: "Massachusetts",
