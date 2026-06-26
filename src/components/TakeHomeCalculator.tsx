@@ -409,11 +409,11 @@ export default function TakeHomeCalculator() {
                     type="button"
                     onClick={toggleCompare}
                     aria-label="Compare this scenario with another side-by-side"
-                    className="mono uppercase tracking-[0.15em] text-[10px] px-3 py-2 transition-colors cursor-pointer"
+                    className="mono uppercase tracking-[0.15em] text-[10px] px-4 py-2 transition-colors cursor-pointer"
                     style={{
-                      border: "1px solid rgba(245,241,232,0.35)",
-                      color: "#F5F1E8",
-                      background: "transparent",
+                      border: "1px solid #C99742",
+                      color: "#1A1812",
+                      background: "#C99742",
                     }}
                   >
                     + Compare with another scenario
