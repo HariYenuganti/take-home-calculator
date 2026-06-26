@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { calculateAll } from "@/lib/tax";
-import { fmt, fmtPct, fmtSigned } from "@/lib/format";
+import { fmt, fmtPct, fmtSigned, pctDelta } from "@/lib/format";
 import {
   type CalcState,
   DEFAULT_STATE,
@@ -520,12 +520,4 @@ export default function TakeHomeCalculator() {
       </div>
     </div>
   );
-}
-
-// Format a delta between two rates as signed percentage points.
-// e.g. pctDelta(0.24, 0.22) -> "+2.00 pp"
-function pctDelta(b: number, a: number): string {
-  const diff = (b - a) * 100;
-  const sign = diff >= 0 ? "+" : "\u2212";
-  return `${sign}${Math.abs(diff).toFixed(2)} pp`;
 }
