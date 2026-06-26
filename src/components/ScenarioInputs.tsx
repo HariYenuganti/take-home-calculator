@@ -59,7 +59,7 @@ export default function ScenarioInputs({ state, onChange, result }: Props) {
             min={0}
           />
         ) : (
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <NumberField
               label="Rate / hr"
               value={state.hourlyRate}
@@ -198,7 +198,7 @@ export default function ScenarioInputs({ state, onChange, result }: Props) {
             % of contributable wages
           </span>
         </div>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <NumberField
             label="Trad 401(k)"
             value={state.trad401k}
