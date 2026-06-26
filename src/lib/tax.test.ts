@@ -484,6 +484,23 @@ describe("State handling", () => {
     expect(r.stateTax).toBeCloseTo(100000 * 0.05, 2);
   });
 
+  it("does NOT deduct 401(k)/Section 125 from the state base for PA", () => {
+    // PA flat 3.07% on gross compensation — 401(k) deferrals and HSA are taxed.
+    const r = calculateAll(
+      baseInput({ salary: 100000, trad401k: 10, hsa: 4000, stateKey: "pa" }),
+    );
+    expect(r.stateTax).toBeCloseTo(100000 * 0.0307, 2);
+  });
+
+  it("deducts 401(k)/Section 125 from the state base for conforming states (NC)", () => {
+    const r = calculateAll(
+      baseInput({ salary: 100000, trad401k: 10, hsa: 4000, stateKey: "nc" }),
+    );
+    // NC conforms: base = fedWages ($100k - $10k - $4k = $86k) less the
+    // $12,750 NC standard deduction.
+    expect(r.stateTax).toBeCloseTo((86000 - 12750) * 0.0399, 2);
+  });
+
   it("uses the state's supp rate (not regular rate) for supp withholding where they differ", () => {
     // Indiana: regular 3.00%, supp 3.15%.
     const r = calculateAll(

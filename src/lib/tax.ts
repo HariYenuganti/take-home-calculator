@@ -79,6 +79,11 @@ export interface StateDef {
   rate: number | null;
   suppRate: number | null;
   stdDed: Record<FilingStatus, number>;
+  // Whether this state recognizes the federal pre-tax treatment of 401(k)
+  // elective deferrals and Section 125 cafeteria benefits. A few states (e.g.
+  // PA) tax those contributions instead. Both default to true.
+  allow401kDeduction?: boolean;
+  allowSection125?: boolean;
   // Progressive bracket schedules per filing status. When present, state
   // income tax is computed bracket-wise and `rate` is not used. See the
   // template below for how to add a progressive state.
@@ -103,6 +108,10 @@ export const STATES: Record<string, StateDef> = {
     rate: 0.0307,
     suppRate: 0.0307,
     stdDed: { single: 0, mfj: 0, hoh: 0, mfs: 0 },
+    // PA taxes 401(k) elective deferrals and most Section 125 benefits, so its
+    // wage base is gross compensation, not the reduced federal base.
+    allow401kDeduction: false,
+    allowSection125: false,
   },
   il: {
     name: "Illinois",
@@ -274,6 +283,10 @@ interface ScenarioInput {
   // overrides `stateRate`.
   stateBrackets?: Bracket[];
   stateStdDed: number;
+  // Whether the state recognizes 401(k)/Section 125 pre-tax treatment.
+  // Default true; set false for states like PA. See StateDef above.
+  stateAllows401k?: boolean;
+  stateAllowsSection125?: boolean;
 }
 
 export interface ScenarioResult {
@@ -309,6 +322,8 @@ export function scenario(inp: ScenarioInput): ScenarioResult {
     stateRate,
     stateBrackets,
     stateStdDed,
+    stateAllows401k = true,
+    stateAllowsSection125 = true,
   } = inp;
 
   // 401(k) elective deferrals come out of regular wages plus (optionally) the
@@ -339,7 +354,16 @@ export function scenario(inp: ScenarioInput): ScenarioResult {
   const fedStdDed = FED_STD_DEDUCTION_2026[filingStatus];
   const fedTaxable = Math.max(0, fedWages - fedStdDed);
   const fedTax = calcBracketTax(fedTaxable, FEDERAL_BRACKETS_2026[filingStatus]);
-  const stateTaxable = Math.max(0, fedWages - stateStdDed);
+  // Most states mirror the federal pre-tax treatment of 401(k)/Section 125, so
+  // the state base equals fedWages. For states that don't (e.g. PA), add those
+  // contributions back by deriving the base from gross directly.
+  const stateWages = Math.max(
+    0,
+    gross -
+      (stateAllowsSection125 ? section125 : 0) -
+      (stateAllows401k ? trad401kAmt : 0),
+  );
+  const stateTaxable = Math.max(0, stateWages - stateStdDed);
   const stateTax = stateBrackets
     ? calcBracketTax(stateTaxable, stateBrackets)
     : stateTaxable * stateRate;
@@ -445,6 +469,8 @@ export function calculateAll(inp: CalcInput): CalcResult {
       ? (customStateRate || 0) / 100
       : stateDef.rate || 0;
   const stateStdDed = stateDef.stdDed[filingStatus] || 0;
+  const stateAllows401k = stateDef.allow401kDeduction ?? true;
+  const stateAllowsSection125 = stateDef.allowSection125 ?? true;
 
   const full = scenario({
     gross: totalGross,
@@ -458,6 +484,8 @@ export function calculateAll(inp: CalcInput): CalcResult {
     stateRate: flatStateRate,
     stateBrackets,
     stateStdDed,
+    stateAllows401k,
+    stateAllowsSection125,
   });
 
   const salaryOnly = scenario({
@@ -472,6 +500,8 @@ export function calculateAll(inp: CalcInput): CalcResult {
     stateRate: flatStateRate,
     stateBrackets,
     stateStdDed,
+    stateAllows401k,
+    stateAllowsSection125,
   });
 
   // Rate shown in the UI ("plus state X%"). For flat states this equals the
