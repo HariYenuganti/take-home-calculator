@@ -393,7 +393,10 @@ export default function ScenarioDetail({
                   // full form.
                   const shortLabel = `${Math.round(s.rate * 100)}%`;
                   const labelVisible = pct > 4;
-                  const dark = s.rate >= 0.22;
+                  // The 0.22 bracket's gold (#C99742) is too light to carry
+                  // cream text (2.3:1), so only brackets above it get the
+                  // light-on-dark treatment; 0.22 and below use ink text.
+                  const dark = s.rate > 0.22;
                   return (
                     <div
                       key={i}
