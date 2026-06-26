@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   DEFAULT_STATE,
+  SERIALIZATION_BASELINE,
   parseComparison,
   parseState,
   serializeComparison,
@@ -19,6 +20,14 @@ describe("serializeState", () => {
     );
     expect(Array.from(params.keys())).toEqual(["salary"]);
     expect(params.get("salary")).toBe("250000");
+  });
+
+  it("diffs against the frozen serialization baseline", () => {
+    // A state equal to the baseline encodes to nothing.
+    expect(serializeState(SERIALIZATION_BASELINE)).toBe("");
+    // The demo seed currently matches the baseline; serialization must keep
+    // diffing against the frozen baseline even if the demo seed later changes.
+    expect(serializeState(DEFAULT_STATE)).toBe("");
   });
 
   it("serializes booleans as '1' / '0'", () => {

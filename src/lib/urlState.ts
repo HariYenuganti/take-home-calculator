@@ -24,7 +24,11 @@ export interface CalcState {
   otherPostTax: number;
 }
 
-export const DEFAULT_STATE: CalcState = {
+// FROZEN wire-format baseline. The URL encodes only the fields that differ
+// from this, so these values must never change — shared links in the wild
+// decode their omitted fields against them. Kept separate from the UI seed
+// below so the demo can evolve without altering the wire format.
+export const SERIALIZATION_BASELINE: CalcState = {
   payType: "annual",
   annualSalary: 140000,
   hourlyRate: 40,
@@ -45,6 +49,11 @@ export const DEFAULT_STATE: CalcState = {
   otherPreTax: 0,
   otherPostTax: 0,
 };
+
+// Scenario shown to a first-time visitor (a populated demo). A spread copy, so
+// it may diverge from the frozen baseline freely — it does not affect URL
+// serialization.
+export const DEFAULT_STATE: CalcState = { ...SERIALIZATION_BASELINE };
 
 // Short-ish, human-readable URL keys. Stable; don't rename casually — shared
 // links out in the wild will break.
@@ -99,7 +108,7 @@ function writeStateParams(
 ): void {
   (Object.keys(KEYS) as Array<keyof CalcState>).forEach((k) => {
     const value = state[k];
-    if (value === DEFAULT_STATE[k]) return;
+    if (value === SERIALIZATION_BASELINE[k]) return;
     const urlKey = prefix + KEYS[k];
     if (typeof value === "boolean") params.set(urlKey, value ? "1" : "0");
     else params.set(urlKey, String(value));

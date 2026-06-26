@@ -6,6 +6,7 @@ import { fmt, fmtPct, fmtSigned } from "@/lib/format";
 import {
   type CalcState,
   DEFAULT_STATE,
+  SERIALIZATION_BASELINE,
   parseComparison,
   serializeComparison,
 } from "@/lib/urlState";
@@ -83,10 +84,10 @@ export default function TakeHomeCalculator() {
     /* eslint-disable react-hooks/set-state-in-effect -- legitimate one-time
        hydration from window.location (external source, not derived state) */
     if (Object.keys(a).length > 0) {
-      setState((prev) => ({ ...prev, ...a }));
+      setState({ ...SERIALIZATION_BASELINE, ...a });
     }
     if (b !== null) {
-      setScenarioB({ ...DEFAULT_STATE, ...b });
+      setScenarioB({ ...SERIALIZATION_BASELINE, ...b });
     }
     /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
