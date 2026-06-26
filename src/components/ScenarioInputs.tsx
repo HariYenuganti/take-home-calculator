@@ -37,14 +37,18 @@ export default function ScenarioInputs({ state, onChange, result }: Props) {
             regular wages
           </span>
         </div>
-        <div className="seg mb-4">
+        <div className="seg mb-4" role="group" aria-label="Pay type">
           <button
+            type="button"
+            aria-pressed={state.payType === "annual"}
             className={state.payType === "annual" ? "active" : ""}
             onClick={() => onChange({ payType: "annual" })}
           >
             Salary
           </button>
           <button
+            type="button"
+            aria-pressed={state.payType === "hourly"}
             className={state.payType === "hourly" ? "active" : ""}
             onClick={() => onChange({ payType: "hourly" })}
           >
