@@ -511,12 +511,12 @@ describe("State handling", () => {
   });
 
   it("uses the state's supp rate (not regular rate) for supp withholding where they differ", () => {
-    // Indiana: regular 3.00%, supp 3.15%.
+    // Colorado: regular 4.4%, supplemental 4.63%.
     const r = calculateAll(
-      baseInput({ salary: 100000, bonus: 10000, stateKey: "in" }),
+      baseInput({ salary: 100000, bonus: 10000, stateKey: "co" }),
     );
-    expect(r.stateRate).toBeCloseTo(0.03, 4);
-    expect(r.stateSuppRate).toBeCloseTo(0.0315, 4);
-    expect(r.supp.stateWH).toBeCloseTo(10000 * 0.0315, 2);
+    expect(r.stateRate).toBeCloseTo(0.044, 4);
+    expect(r.stateSuppRate).toBeCloseTo(0.0463, 4);
+    expect(r.supp.stateWH).toBeCloseTo(10000 * 0.0463, 2);
   });
 });

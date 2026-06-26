@@ -133,8 +133,8 @@ export const STATES: Record<string, StateDef> = {
   },
   in: {
     name: "Indiana",
-    rate: 0.03,
-    suppRate: 0.0315,
+    rate: 0.0295,
+    suppRate: 0.0295,
     stdDed: { single: 1000, mfj: 2000, hoh: 1000, mfs: 1000 },
   },
   co: {
